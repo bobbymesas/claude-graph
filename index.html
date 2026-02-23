@@ -283,6 +283,21 @@ body.panel-resizing { cursor: ew-resize; user-select: none; }
 }
 .chip:hover { border-color: var(--accent-r); color: var(--accent); background: var(--accent-b); }
 
+/* ── NAV BACK BUTTON ─────────────────────────────────────────── */
+#nav-back {
+  display: none;
+  position: fixed; bottom: 20px; left: 20px; z-index: 15;
+  background: var(--surf2); border: 1px solid var(--border2);
+  border-radius: 6px; color: var(--dim); cursor: pointer;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; font-weight: 500; letter-spacing: .06em;
+  padding: 7px 16px;
+  transition: color .15s, border-color .15s, background .15s;
+}
+#nav-back:hover {
+  color: var(--accent); border-color: var(--accent-r); background: var(--accent-b);
+}
+
 /* ── LEGEND ───────────────────────────────────────────────────── */
 #legend {
   position: fixed; bottom: 20px; left: 20px; z-index: 10;
@@ -1147,13 +1162,15 @@ jobs:
   </div>
 </div>
 
+<button id="nav-back">← back</button>
+
 <div id="legend">
   <div class="leg-title">Category</div>
-  <div class="leg-item"><div class="leg-dot" style="background:#d4a853"></div><span class="leg-label">Core</span></div>
-  <div class="leg-item"><div class="leg-dot" style="background:#c46e5a"></div><span class="leg-label">Extensibility</span></div>
-  <div class="leg-item"><div class="leg-dot" style="background:#5a8fc4"></div><span class="leg-label">Distribution</span></div>
-  <div class="leg-item"><div class="leg-dot" style="background:#5ea878"></div><span class="leg-label">Configuration</span></div>
+  <div class="leg-item"><div class="leg-dot" style="background:#d4a853"></div><span class="leg-label">Core Concepts</span></div>
+  <div class="leg-item"><div class="leg-dot" style="background:#5a8fc4"></div><span class="leg-label">Modes</span></div>
+  <div class="leg-item"><div class="leg-dot" style="background:#5ea878"></div><span class="leg-label">Customization</span></div>
   <div class="leg-item"><div class="leg-dot" style="background:#9070c4"></div><span class="leg-label">Integration</span></div>
+  <div class="leg-item"><div class="leg-dot" style="background:#a09080"></div><span class="leg-label">Detail</span></div>
 </div>
 
 <script>
@@ -1162,16 +1179,20 @@ jobs:
 // ═══════════════════════════════════════════════════════════════
 
 const COLORS = {
-  core:          '#d4a853',
-  extensibility: '#c46e5a',
-  distribution:  '#5a8fc4',
-  config:        '#5ea878',
-  integration:   '#9070c4',
+  core:          '#d4a853',   // gold  — Core Concepts
+  modes:         '#5a8fc4',   // blue  — Modes
+  config:        '#5ea878',   // green — Customization
+  integration:   '#9070c4',   // purple — Integrations
+  detail:        '#a09080',   // muted — L4 detail nodes
+  extensibility: '#c46e5a',   // kept for existing node refs
+  distribution:  '#5a8fc4',   // kept for existing node refs
 };
 
 const CAT_LABELS = {
-  core: 'Core', extensibility: 'Extensibility',
-  distribution: 'Distribution', config: 'Configuration', integration: 'Integration',
+  core: 'Core Concept', modes: 'Mode',
+  config: 'Customization', integration: 'Integration',
+  detail: 'Detail',
+  extensibility: 'Extensibility', distribution: 'Distribution',
 };
 
 const INITIATED = {
@@ -2080,39 +2101,842 @@ Slash command instructions go here...
       },
     ],
   },
+
+  // ── L2 Category Nodes ──────────────────────────────────────────
+  {
+    id: 'modes', label: 'Modes', cat: 'modes', r: 34,
+    initiated: 'user',
+    short: 'How Claude Code operates — interactive, headless, plan, or agent.',
+    desc: 'Claude Code can be run in several modes: Interactive for conversational coding, Plan Mode for proposal-first workflow, Headless for CI/CD automation, and Agent Mode for autonomous multi-agent orchestration.',
+    doc: 'https://docs.anthropic.com/en/docs/claude-code/overview',
+    docLabel: 'Claude Code overview',
+    examples: [
+      {
+        filename: 'Mode overview',
+        label: 'When to use each mode',
+        lang: 'plaintext',
+        code: `Interactive  claude            Default — conversational coding
+Plan Mode    /plan             Propose before building
+Headless     claude -p "..."   CI/CD, scripts, automation
+Agent Mode   Task tool         Parallel subagent orchestration`,
+      },
+    ],
+  },
+  {
+    id: 'core-concepts', label: 'Core\nConcepts', cat: 'core', r: 34,
+    initiated: 'both',
+    short: 'The foundational building blocks: tools, agents, context, and permissions.',
+    desc: 'Claude Code is built on four core concepts: Tools (the primitives Claude calls to interact with your system), Agents (pre-configured AI personalities for specific tasks), Context & Memory (what Claude can see), and Permissions (what Claude is allowed to do).',
+    doc: 'https://docs.anthropic.com/en/docs/claude-code/overview',
+    docLabel: 'Claude Code overview',
+    examples: [],
+  },
+  {
+    id: 'customization', label: 'Customization', cat: 'config', r: 34,
+    initiated: 'user',
+    short: 'Configure Claude Code with CLAUDE.md, Settings, Skills, and Hooks.',
+    desc: 'Claude Code is highly customizable: CLAUDE.md provides persistent instructions loaded every session, Settings configure behavior and permissions, Skills let Claude invoke specialized workflows automatically, and Hooks automate lifecycle events without user interaction.',
+    doc: 'https://docs.anthropic.com/en/docs/claude-code/settings',
+    docLabel: 'Settings & customization docs',
+    examples: [],
+  },
+  {
+    id: 'integrations', label: 'Integrations', cat: 'integration', r: 34,
+    initiated: 'user',
+    short: 'Connect Claude Code to external tools via MCP, plugins, and IDEs.',
+    desc: 'Claude Code connects to external systems via MCP servers (databases, GitHub, JIRA, APIs), the Plugin system for shareable workflow bundles, and IDE integrations for VS Code, JetBrains, and other editors.',
+    doc: 'https://docs.anthropic.com/en/docs/claude-code/mcp',
+    docLabel: 'MCP & integrations docs',
+    examples: [],
+  },
+
+  // ── L3 Concept Nodes ───────────────────────────────────────────
+  {
+    id: 'interactive-mode', label: 'Interactive\nMode', cat: 'modes', r: 26,
+    initiated: 'user',
+    short: 'The default mode — conversational coding with live tool execution.',
+    desc: 'Interactive mode is Claude Code\'s primary interface. You type prompts, Claude thinks and calls tools (Read, Edit, Bash, etc.) in a live loop, showing results as it goes. Perfect for exploratory coding, debugging, and collaborative development. Just run `claude` to start.',
+    doc: 'https://docs.anthropic.com/en/docs/claude-code/getting-started',
+    docLabel: 'Getting started docs',
+    examples: [
+      {
+        filename: 'shell',
+        label: 'Starting an interactive session',
+        lang: 'bash',
+        code: `# Start interactive session
+claude
+
+# With specific model
+claude --model claude-opus-4-6
+
+# With restricted tools
+claude --allowedTools Read,Grep,Glob
+
+# Common in-session commands
+/plan    # enter plan mode
+/compact # summarize history to save tokens
+/cost    # see token usage
+/clear   # start fresh`,
+      },
+    ],
+  },
+  {
+    id: 'agent-mode', label: 'Agent\nMode', cat: 'modes', r: 26,
+    initiated: 'both',
+    short: 'Autonomous multi-agent execution — Claude delegates to parallel subagents.',
+    desc: 'Agent mode allows Claude to autonomously orchestrate multiple subagents for complex tasks. A lead agent breaks down work and spawns specialized child agents (code reviewer, QA, researcher) that run in parallel with isolated context windows, then aggregates their results.',
+    doc: 'https://docs.anthropic.com/en/docs/claude-code/sub-agents',
+    docLabel: 'Subagents & agent mode docs',
+    examples: [
+      {
+        filename: 'Agent mode pattern',
+        label: 'Spawning parallel specialist agents',
+        lang: 'plaintext',
+        code: `You: "Review my PR, run tests, and research alternatives"
+
+Lead Claude spawns 3 agents simultaneously:
+
+  ┌─ Code Reviewer ──────────────────────────────┐
+  │  tools: Read, Grep, Glob                     │
+  │  → returns: severity-grouped findings        │
+  └──────────────────────────────────────────────┘
+
+  ┌─ QA Agent ───────────────────────────────────┐
+  │  tools: Bash, Read                           │
+  │  → returns: test pass/fail + errors          │
+  └──────────────────────────────────────────────┘
+
+  ┌─ Researcher ─────────────────────────────────┐
+  │  tools: WebSearch, WebFetch                  │
+  │  → returns: docs + alternatives              │
+  └──────────────────────────────────────────────┘
+
+Parent aggregates all results and responds.`,
+      },
+    ],
+  },
+  {
+    id: 'context-memory', label: 'Context\n& Memory', cat: 'core', r: 26,
+    initiated: 'both',
+    short: 'Claude\'s working memory: the context window, CLAUDE.md, and auto-memory.',
+    desc: 'Claude\'s context window (~200k tokens) holds everything it can see: your conversation, loaded file contents, tool results, CLAUDE.md, and the system prompt. Memory across sessions comes from CLAUDE.md (loaded fresh each time) and auto-memory files in the project memory directory.',
+    doc: 'https://docs.anthropic.com/en/docs/claude-code/memory',
+    docLabel: 'Memory & context docs',
+    examples: [
+      {
+        filename: 'Context window contents',
+        label: 'What lives in Claude\'s working memory',
+        lang: 'plaintext',
+        code: `┌─────────────────────────────────────────────────────┐
+│  Context Window  (~200,000 tokens for Sonnet/Opus)  │
+│                                                     │
+│  System prompt              ~500–2,000 tokens       │
+│  CLAUDE.md (loaded fresh)   variable                │
+│  Conversation history       grows over time         │
+│  File contents              (each Read adds tokens) │
+│  Tool call results          (Bash output, searches) │
+│  Auto-memory/MEMORY.md      first 200 lines         │
+│                                                     │
+└─────────────────────────────────────────────────────┘
+
+Use /compact to summarize history and reclaim space.`,
+      },
+    ],
+  },
+  {
+    id: 'permissions', label: 'Permissions', cat: 'core', r: 26,
+    initiated: 'user',
+    short: 'Control which tools Claude can use via allow/deny lists in settings.json.',
+    desc: 'Permissions govern what Claude Code can do in your environment. Use allow and deny lists in settings.json to control which Bash commands, file paths, and tools Claude can use without asking. Trust modes let you balance safety and workflow speed.',
+    doc: 'https://docs.anthropic.com/en/docs/claude-code/settings',
+    docLabel: 'Permissions & settings docs',
+    examples: [
+      {
+        filename: '.claude/settings.json',
+        label: 'Allow/deny permission patterns',
+        lang: 'json',
+        code: `{
+  "permissions": {
+    "allow": [
+      "Read(**)",
+      "Glob(**)",
+      "Grep(**)",
+      "Bash(git *)",
+      "Bash(npm test)",
+      "Bash(npm run lint)",
+      "Write(src/**)",
+      "Edit(src/**)"
+    ],
+    "deny": [
+      "Bash(rm -rf *)",
+      "Bash(curl *)",
+      "WebFetch(*)",
+      "Bash(git push --force *)"
+    ]
+  }
+}`,
+      },
+    ],
+  },
+  {
+    id: 'skills', label: 'Skills &\nCommands', cat: 'config', r: 26,
+    initiated: 'both',
+    short: 'Agent Skills (auto-invoked), slash commands (user-invoked), and output styles.',
+    desc: 'Claude Code\'s skill system includes Agent Skills (Claude invokes automatically based on context), Slash Commands (you invoke explicitly with /command-name), Output Styles (customize Claude\'s response format), and the Marketplace for sharing plugin bundles with your team.',
+    doc: 'https://docs.anthropic.com/en/docs/claude-code/skills',
+    docLabel: 'Skills & commands docs',
+    examples: [
+      {
+        filename: 'Directory layout',
+        label: 'Where skills and commands live',
+        lang: 'plaintext',
+        code: `.claude/
+├── skills/            ← Agent Skills (Claude-invoked)
+│   └── commit-helper/
+│       └── SKILL.md
+├── commands/          ← Slash commands (user-invoked)
+│   ├── review.md      ← /review
+│   └── deploy.md      ← /deploy
+└── output-styles/     ← Response format presets
+    └── concise.md     ← /output-style concise
+
+~/.claude/skills/      ← personal skills (all projects)
+~/.claude/commands/    ← personal commands`,
+      },
+    ],
+  },
+  {
+    id: 'ide-integrations', label: 'IDE\nIntegrations', cat: 'integration', r: 26,
+    initiated: 'user',
+    short: 'Claude Code integrations for VS Code, JetBrains, and other editors.',
+    desc: 'Claude Code integrates directly into popular IDEs: VS Code via a marketplace extension, JetBrains IDEs (IntelliJ, PyCharm, WebStorm, etc.), and more. IDE integrations bring Claude\'s capabilities into your editor — inline edits, context-aware suggestions, and terminal access without switching windows.',
+    doc: 'https://docs.anthropic.com/en/docs/claude-code/ide-integrations',
+    docLabel: 'IDE integrations docs',
+    examples: [
+      {
+        filename: 'IDE setup',
+        label: 'Setting up Claude Code in your editor',
+        lang: 'bash',
+        code: `# VS Code — install from marketplace:
+# Search "Claude Code" in Extensions (Ctrl+Shift+X)
+# Or via CLI:
+code --install-extension anthropic.claude-code
+
+# JetBrains — install from JetBrains Marketplace:
+# Settings → Plugins → search "Claude Code"
+
+# After installing, the claude terminal opens in
+# your IDE's integrated terminal with full access
+# to your project files and git context.`,
+      },
+    ],
+  },
+
+  // ── L4 Detail Nodes ────────────────────────────────────────────
+  {
+    id: 'tool-bash', label: 'Bash', cat: 'detail', r: 20,
+    initiated: 'claude',
+    short: 'Run any shell command: git, npm, tests, scripts.',
+    desc: 'The Bash tool lets Claude run any shell command in your environment. Used for running tests, installing packages, executing scripts, making git commits, and any other system operation. Permission patterns in settings.json control which commands are auto-approved.',
+    doc: 'https://docs.anthropic.com/en/docs/claude-code/tools',
+    docLabel: 'Bash tool reference',
+    examples: [
+      {
+        filename: 'Bash permission patterns',
+        label: 'Controlling Bash via permissions',
+        lang: 'json',
+        code: `{
+  "permissions": {
+    "allow": [
+      "Bash(git *)",
+      "Bash(npm *)",
+      "Bash(python -m pytest *)"
+    ],
+    "deny": [
+      "Bash(rm -rf *)",
+      "Bash(git push --force *)",
+      "Bash(curl *)"
+    ]
+  }
+}`,
+      },
+    ],
+  },
+  {
+    id: 'tool-read', label: 'Read/Glob\n/Grep', cat: 'detail', r: 20,
+    initiated: 'claude',
+    short: 'Read files, find by pattern, search contents — core codebase tools.',
+    desc: 'Read, Glob, and Grep form Claude\'s file system interface. Read loads specific files into context. Glob finds files by glob pattern (e.g. **/*.ts). Grep searches file contents with regex and returns matching lines. These are the most-used tools for understanding and navigating codebases.',
+    doc: 'https://docs.anthropic.com/en/docs/claude-code/tools',
+    docLabel: 'File tools reference',
+    examples: [
+      {
+        filename: 'Common patterns',
+        label: 'Codebase search patterns',
+        lang: 'plaintext',
+        code: `Read("src/auth/login.ts")      # load a specific file
+Glob("src/**/*.test.ts")       # find all test files
+Grep("useEffect", "*.tsx")     # find hook usage
+Grep("TODO|FIXME", glob="**")  # find all TODOs
+
+# Best practice: use Grep/Glob to find what you
+# need before Read — avoids loading large files
+# unnecessarily and saves context tokens.`,
+      },
+    ],
+  },
+  {
+    id: 'tool-webfetch', label: 'WebFetch\n/Search', cat: 'detail', r: 20,
+    initiated: 'claude',
+    short: 'Fetch URLs and search the web — access live docs and APIs.',
+    desc: 'WebFetch retrieves a URL and converts HTML to markdown for Claude to analyze. WebSearch queries the web and returns ranked results. Both let Claude access live documentation, release notes, API specs, and web resources during a session without leaving the terminal.',
+    doc: 'https://docs.anthropic.com/en/docs/claude-code/tools',
+    docLabel: 'Web tools reference',
+    examples: [
+      {
+        filename: 'Web tool usage',
+        label: 'Accessing live documentation',
+        lang: 'plaintext',
+        code: `WebFetch("https://docs.anthropic.com/...")
+# → Fetches page, converts HTML to markdown
+# → Claude reads and analyzes the content
+
+WebSearch("React 19 breaking changes 2026")
+# → Returns top search results with titles + URLs
+# → Claude picks relevant results to fetch
+
+# Common uses:
+# - Check current API docs before writing code
+# - Research library versions and breaking changes
+# - Validate code patterns against official docs`,
+      },
+    ],
+  },
+  {
+    id: 'tool-task', label: 'Task\nTool', cat: 'detail', r: 20,
+    initiated: 'claude',
+    short: 'Spawn a subagent with isolated context to handle a parallel subtask.',
+    desc: 'The Task tool spawns a child agent with its own isolated context window, agentic loop, and tool set. Subagents work independently and return results to the parent when done. Enables genuine parallelism: spawn a code reviewer, QA agent, and researcher simultaneously. Note: each subagent uses roughly 7× more tokens than sequential work.',
+    doc: 'https://docs.anthropic.com/en/docs/claude-code/sub-agents',
+    docLabel: 'Task tool & subagents docs',
+    examples: [
+      {
+        filename: 'When to use Task',
+        label: 'Task tool cost/benefit guide',
+        lang: 'plaintext',
+        code: `USE Task tool when:
+  ✓ Work is truly independent and parallelizable
+  ✓ You need to protect parent context from growing
+  ✓ Specialists (reviewer, QA, researcher) add value
+
+AVOID Task tool when:
+  ✗ Work is sequential (each step needs previous)
+  ✗ Task is simple (overhead isn't worth it)
+  ✗ Budget is tight (~7× more tokens than sequential)
+
+Sweet spot: 3 parallel specialist agents on complex
+multi-facet tasks (review + test + document).`,
+      },
+    ],
+  },
+  {
+    id: 'hook-pretooluse', label: 'PreToolUse', cat: 'detail', r: 20,
+    initiated: 'system',
+    short: 'Fires before each tool call — can log, validate, or block operations.',
+    desc: 'PreToolUse hooks run before Claude executes any tool call. They receive the tool name and inputs as JSON on stdin. They can log the operation, validate inputs, inject context into stdout (which Claude sees), or exit with code 2 to block the tool call with an error message.',
+    doc: 'https://docs.anthropic.com/en/docs/claude-code/hooks',
+    docLabel: 'Hooks guide',
+    examples: [
+      {
+        filename: '.claude/settings.json',
+        label: 'PreToolUse — validate before Bash calls',
+        lang: 'json',
+        code: `{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [{
+          "type": "command",
+          "command": ".claude/hooks/validate-bash.sh"
+        }]
+      }
+    ]
+  }
+}`,
+      },
+      {
+        filename: '.claude/hooks/validate-bash.sh',
+        label: 'Block rm -rf and push --force',
+        lang: 'bash',
+        code: `#!/bin/bash
+INPUT=$(cat)
+CMD=$(echo "$INPUT" | jq -r '.tool_input.command // ""')
+
+# Block destructive commands
+if echo "$CMD" | grep -qE 'rm -rf|push --force'; then
+  echo "Blocked: '$CMD' requires manual confirmation" >&2
+  exit 2  # exit 2 = block the tool call
+fi
+
+exit 0`,
+      },
+    ],
+  },
+  {
+    id: 'hook-posttooluse', label: 'PostToolUse', cat: 'detail', r: 20,
+    initiated: 'system',
+    short: 'Fires after each tool call — run formatters, log, or transform output.',
+    desc: 'PostToolUse hooks run after Claude completes a tool call. They receive the tool name, inputs, and outputs as JSON on stdin. Common uses: auto-run Prettier on files Claude just wrote, log tool usage for auditing, send notifications when long operations complete, or transform tool output before Claude sees it.',
+    doc: 'https://docs.anthropic.com/en/docs/claude-code/hooks',
+    docLabel: 'Hooks guide',
+    examples: [
+      {
+        filename: '.claude/settings.json',
+        label: 'PostToolUse — auto-format after writes',
+        lang: 'json',
+        code: `{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [{
+          "type": "command",
+          "command": "prettier --write \\"$TOOL_INPUT_FILE_PATH\\"",
+          "timeout": 30
+        }]
+      }
+    ]
+  }
+}`,
+      },
+    ],
+  },
+  {
+    id: 'hook-stop', label: 'Stop /\nNotify', cat: 'detail', r: 20,
+    initiated: 'system',
+    short: 'Fires when Claude finishes or sends a notification — great for cleanup.',
+    desc: 'The Stop hook fires when Claude Code ends a session (the agentic loop is complete or you interrupt). Notification hooks fire when Claude wants to alert you during long tasks. Use these for cleanup scripts, sending desktop notifications, logging session summaries, or triggering external workflows.',
+    doc: 'https://docs.anthropic.com/en/docs/claude-code/hooks',
+    docLabel: 'Hooks guide',
+    examples: [
+      {
+        filename: '.claude/settings.json',
+        label: 'Stop hook — desktop notification on completion',
+        lang: 'json',
+        code: `{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [{
+          "type": "command",
+          "command": "osascript -e 'display notification \\"Claude finished\\" with title \\"Claude Code\\"'"
+        }]
+      }
+    ],
+    "Notification": [
+      {
+        "hooks": [{
+          "type": "command",
+          "command": "terminal-notifier -message \\"$CLAUDE_NOTIFICATION\\""
+        }]
+      }
+    ]
+  }
+}`,
+      },
+    ],
+  },
+  {
+    id: 'claudemd-project', label: 'Project\nCLAUDE.md', cat: 'detail', r: 20,
+    initiated: 'user',
+    short: 'Team-shared instructions committed to git — conventions, stack, guardrails.',
+    desc: 'The project-level CLAUDE.md lives at the repo root or in .claude/CLAUDE.md. It\'s committed to git and loaded for every team member\'s sessions. Use it for project conventions, stack documentation, and guardrails that everyone on the team should follow.',
+    doc: 'https://docs.anthropic.com/en/docs/claude-code/memory',
+    docLabel: 'CLAUDE.md docs',
+    examples: [
+      {
+        filename: 'CLAUDE.md',
+        label: 'Example project CLAUDE.md',
+        lang: 'markdown',
+        code: `# My Project
+
+## Critical guardrails
+- NEVER delete files without confirmation
+- NEVER commit secrets or credentials
+- Always run \`npm test\` before marking tasks done
+
+## Stack
+- TypeScript, React 18, Node 20
+- Postgres via Drizzle ORM
+- Vitest for tests
+
+## Conventions
+- Named exports only — no default exports
+- API routes in \`src/routes/\`
+
+@.claude/rules/code-style.md`,
+      },
+    ],
+  },
+  {
+    id: 'claudemd-global', label: 'Global\nCLAUDE.md', cat: 'detail', r: 20,
+    initiated: 'user',
+    short: 'Personal instructions at ~/.claude/CLAUDE.md — applies to all projects.',
+    desc: 'Your global CLAUDE.md at ~/.claude/CLAUDE.md applies to every Claude Code session across all your projects. Use it for personal preferences, your coding style, and defaults you always want — preferences that shouldn\'t be imposed on teammates. It\'s never committed to git.',
+    doc: 'https://docs.anthropic.com/en/docs/claude-code/memory',
+    docLabel: 'CLAUDE.md docs',
+    examples: [
+      {
+        filename: '~/.claude/CLAUDE.md',
+        label: 'Example global personal CLAUDE.md',
+        lang: 'markdown',
+        code: `# My Personal Preferences
+
+## Communication style
+- Be concise — skip preamble and affirmations
+- Use bullet points over prose for explanations
+
+## Coding defaults
+- TypeScript strict mode always
+- Never use \`any\` type without a comment
+- Always run tests before saying you're done
+
+## Always remember
+- I'm on macOS — use brew, not apt
+- My preferred formatter is Prettier`,
+      },
+    ],
+  },
+  {
+    id: 'claudemd-inheritance', label: 'CLAUDE.md\nInheritance', cat: 'detail', r: 20,
+    initiated: 'both',
+    short: 'Multiple CLAUDE.md files merge: enterprise → global → project → local.',
+    desc: 'Claude Code merges CLAUDE.md from multiple layers in order: enterprise policy (admin-managed, always loaded), global personal (~/.claude/CLAUDE.md + rules/), project shared (.claude/CLAUDE.md + rules/), and local personal (.claude/CLAUDE.local.md). Later layers extend or override earlier ones.',
+    doc: 'https://docs.anthropic.com/en/docs/claude-code/memory',
+    docLabel: 'CLAUDE.md inheritance docs',
+    examples: [
+      {
+        filename: 'CLAUDE.md layers',
+        label: 'The full inheritance chain',
+        lang: 'plaintext',
+        code: `Load order (later = higher priority):
+
+1. Enterprise policy   ← company-wide guardrails (admin)
+
+2. Global personal     ~/.claude/CLAUDE.md
+                       + ~/.claude/rules/*.md
+   ← your preferences across ALL projects
+
+3. Project shared      .claude/CLAUDE.md
+                       + .claude/rules/*.md
+   ← team conventions, committed to git
+
+4. Local personal      .claude/CLAUDE.local.md
+   ← your private project overrides (gitignored)
+
+All layers are merged into one system prompt.`,
+      },
+    ],
+  },
+  {
+    id: 'mcp-config', label: 'MCP\nConfig', cat: 'detail', r: 20,
+    initiated: 'user',
+    short: 'Configure MCP servers in .mcp.json or via the claude mcp CLI.',
+    desc: 'MCP server configuration lives in .mcp.json at your repo root or in ~/.claude/mcp.json for global personal servers. Each entry specifies transport (stdio or HTTP/SSE), command/URL, arguments, and environment variables. Manage servers with the claude mcp add/list/remove CLI.',
+    doc: 'https://docs.anthropic.com/en/docs/claude-code/mcp',
+    docLabel: 'MCP configuration docs',
+    examples: [
+      {
+        filename: '.mcp.json',
+        label: 'Configuring MCP servers',
+        lang: 'json',
+        code: `{
+  "mcpServers": {
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": { "GITHUB_PERSONAL_ACCESS_TOKEN": "\${GITHUB_TOKEN}" }
+    },
+    "postgres": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-postgres",
+               "postgresql://localhost/mydb"]
+    }
+  }
+}`,
+      },
+      {
+        filename: 'shell',
+        label: 'Managing MCP servers via CLI',
+        lang: 'bash',
+        code: `claude mcp add --transport stdio github \\
+  npx -y @modelcontextprotocol/server-github
+
+claude mcp add --transport http notion \\
+  https://mcp.notion.com/mcp
+
+claude mcp list
+claude mcp remove github`,
+      },
+    ],
+  },
+  {
+    id: 'mcp-protocol', label: 'MCP\nProtocol', cat: 'detail', r: 20,
+    initiated: 'both',
+    short: 'Model Context Protocol — the open standard for AI tool extensions.',
+    desc: 'The Model Context Protocol (MCP) is an open standard for connecting AI models to external tools and data sources. MCP servers expose tools, resources, and prompts that Claude can call. Any MCP-compatible server — from the community or custom-built — works with Claude Code.',
+    doc: 'https://docs.anthropic.com/en/docs/claude-code/mcp',
+    docLabel: 'MCP protocol docs',
+    examples: [
+      {
+        filename: 'MCP transport options',
+        label: 'How MCP servers connect',
+        lang: 'plaintext',
+        code: `Transport types:
+
+stdio (local)
+  Claude spawns a subprocess and communicates
+  via stdin/stdout. Best for local tools and
+  command-line utilities.
+
+HTTP/SSE (remote)
+  Claude connects to a running HTTP server.
+  Best for shared team servers and APIs.
+
+Popular community MCP servers:
+  @modelcontextprotocol/server-github
+  @modelcontextprotocol/server-postgres
+  @modelcontextprotocol/server-filesystem
+  @modelcontextprotocol/server-brave-search`,
+      },
+    ],
+  },
+  {
+    id: 'plugin-yaml', label: 'Plugin\nManifest', cat: 'detail', r: 20,
+    initiated: 'user',
+    short: 'plugin.json in .claude-plugin/ — declares your plugin\'s metadata.',
+    desc: 'Every Claude Code plugin needs a plugin.json manifest in a .claude-plugin/ directory at the plugin root. It declares the plugin\'s name, version, description, author, license, and keywords. The manifest is used by marketplaces to list, search, and install plugins.',
+    doc: 'https://docs.anthropic.com/en/docs/claude-code/plugins',
+    docLabel: 'Plugin manifest docs',
+    examples: [
+      {
+        filename: '.claude-plugin/plugin.json',
+        label: 'Plugin manifest format',
+        lang: 'json',
+        code: `{
+  "name": "deploy-toolkit",
+  "version": "1.2.0",
+  "description": "Kubernetes deployment commands and agents",
+  "author": {
+    "name": "My Org",
+    "email": "dev@example.com"
+  },
+  "license": "MIT",
+  "keywords": ["kubernetes", "deployment", "ci-cd"]
+}`,
+      },
+    ],
+  },
+  {
+    id: 'plugin-publish', label: 'Publish\nPlugin', cat: 'detail', r: 20,
+    initiated: 'user',
+    short: 'Share a plugin via marketplace.json in a Git repo or local directory.',
+    desc: 'Publish Claude Code plugins by adding them to a marketplace.json registry — a simple JSON file listing available plugins and their source directories. Host the registry in a Git repo or local path, then register it in settings.json so users can install from it.',
+    doc: 'https://docs.anthropic.com/en/docs/claude-code/plugin-marketplaces',
+    docLabel: 'Plugin marketplace docs',
+    examples: [
+      {
+        filename: 'marketplace.json',
+        label: 'Marketplace registry format',
+        lang: 'json',
+        code: `{
+  "name": "my-org-plugins",
+  "owner": { "name": "My Org" },
+  "plugins": [
+    {
+      "name": "code-reviewer",
+      "source": "./code-reviewer",
+      "description": "Automated code review tools"
+    },
+    {
+      "name": "deploy-helper",
+      "source": "./deploy-helper",
+      "description": "Kubernetes deployment commands"
+    }
+  ]
+}`,
+      },
+      {
+        filename: '.claude/settings.json',
+        label: 'Register a marketplace',
+        lang: 'json',
+        code: `{
+  "plugins": {
+    "marketplaces": [
+      "github.com/my-org/claude-plugins"
+    ],
+    "installed": [
+      "code-reviewer@my-org",
+      "deploy-helper@my-org"
+    ]
+  }
+}`,
+      },
+    ],
+  },
 ];
 
 const edges = [
-  { from: 'claude-code', to: 'agent',        label: 'delegates to' },
-  { from: 'claude-code', to: 'plugin',       label: 'extended by' },
-  { from: 'claude-code', to: 'settings',     label: 'configured by' },
-  { from: 'claude-code', to: 'headless',     label: 'run as' },
-  { from: 'claude-code', to: 'mcp',          label: 'calls tools via' },
-  { from: 'agent',       to: 'subagent',     label: 'spawns' },
-  { from: 'agent',       to: 'skill',        label: 'uses' },
-  { from: 'agent',       to: 'mcp',          label: 'calls tools via' },
-  { from: 'plugin',      to: 'command',      label: 'bundles' },
-  { from: 'plugin',      to: 'skill',        label: 'bundles' },
-  { from: 'plugin',      to: 'hook',         label: 'bundles' },
-  { from: 'plugin',      to: 'mcp',          label: 'bundles' },
-  { from: 'plugin',      to: 'output-style', label: 'bundles' },
-  { from: 'plugin',      to: 'agent',        label: 'bundles' },
-  { from: 'marketplace', to: 'plugin',       label: 'distributes' },
-  { from: 'settings',    to: 'marketplace',  label: 'registers' },
-  { from: 'settings',    to: 'hook',         label: 'defines' },
-  { from: 'settings',    to: 'plugin',       label: 'auto-installs' },
-  { from: 'claude-code', to: 'tools',        label: 'built into' },
-  { from: 'mcp',         to: 'tools',        label: 'extends' },
-  { from: 'agent',       to: 'tools',        label: 'configures access to' },
-  { from: 'settings',    to: 'tools',        label: 'permissions govern' },
-  { from: 'agent',       to: 'frontmatter',  label: 'configured by' },
-  { from: 'skill',       to: 'frontmatter',  label: 'configured by' },
-  { from: 'command',     to: 'frontmatter',  label: 'configured by' },
-  { from: 'claude-code', to: 'plan-mode',    label: 'supports' },
-  { from: 'claude-code', to: 'claude-md',    label: 'loads on startup' },
-  { from: 'settings',    to: 'claude-md',    label: 'complements' },
-  { from: 'agent',       to: 'claude-md',    label: 'memory field loads' },
+  // L1 → L2 category edges
+  { from: 'claude-code',   to: 'modes',           label: 'operates in' },
+  { from: 'claude-code',   to: 'core-concepts',   label: 'built on' },
+  { from: 'claude-code',   to: 'customization',   label: 'extended via' },
+  { from: 'claude-code',   to: 'integrations',    label: 'connects to' },
+  // L2 → L3 edges
+  { from: 'modes',         to: 'interactive-mode', label: '' },
+  { from: 'modes',         to: 'plan-mode',         label: '' },
+  { from: 'modes',         to: 'headless',          label: '' },
+  { from: 'modes',         to: 'agent-mode',        label: '' },
+  { from: 'core-concepts', to: 'tools',             label: '' },
+  { from: 'core-concepts', to: 'agent',             label: '' },
+  { from: 'core-concepts', to: 'context-memory',    label: '' },
+  { from: 'core-concepts', to: 'permissions',       label: '' },
+  { from: 'customization', to: 'claude-md',         label: '' },
+  { from: 'customization', to: 'settings',          label: '' },
+  { from: 'customization', to: 'skills',            label: '' },
+  { from: 'customization', to: 'hook',              label: '' },
+  { from: 'integrations',  to: 'mcp',              label: '' },
+  { from: 'integrations',  to: 'plugin',           label: '' },
+  { from: 'integrations',  to: 'ide-integrations', label: '' },
+  // L3 → L4 edges
+  { from: 'tools',     to: 'tool-bash',          label: '' },
+  { from: 'tools',     to: 'tool-read',          label: '' },
+  { from: 'tools',     to: 'tool-webfetch',      label: '' },
+  { from: 'tools',     to: 'tool-task',          label: '' },
+  { from: 'agent',     to: 'subagent',           label: 'spawns' },
+  { from: 'agent',     to: 'frontmatter',        label: 'configured by' },
+  { from: 'skills',    to: 'skill',              label: '' },
+  { from: 'skills',    to: 'command',            label: '' },
+  { from: 'skills',    to: 'output-style',       label: '' },
+  { from: 'skills',    to: 'marketplace',        label: '' },
+  { from: 'hook',      to: 'hook-pretooluse',    label: '' },
+  { from: 'hook',      to: 'hook-posttooluse',   label: '' },
+  { from: 'hook',      to: 'hook-stop',          label: '' },
+  { from: 'claude-md', to: 'claudemd-project',      label: '' },
+  { from: 'claude-md', to: 'claudemd-global',       label: '' },
+  { from: 'claude-md', to: 'claudemd-inheritance',  label: '' },
+  { from: 'mcp',       to: 'mcp-config',         label: '' },
+  { from: 'mcp',       to: 'mcp-protocol',       label: '' },
+  { from: 'plugin',    to: 'plugin-yaml',        label: '' },
+  { from: 'plugin',    to: 'plugin-publish',     label: '' },
+  // Cross-category reference edges (dashed)
+  { from: 'claude-md',   to: 'context-memory', label: 'feeds into', style: 'ref' },
+  { from: 'permissions', to: 'tools',           label: 'governs',    style: 'ref' },
+  { from: 'hook',        to: 'settings',        label: 'defined in', style: 'ref' },
 ];
+
+// ═══════════════════════════════════════════════════════════════
+// HIERARCHY
+// ═══════════════════════════════════════════════════════════════
+
+const CHILDREN = {
+  // L1 → L2 categories
+  'claude-code':   ['modes', 'core-concepts', 'customization', 'integrations'],
+  // L2 → L3 concepts
+  'modes':         ['interactive-mode', 'plan-mode', 'headless', 'agent-mode'],
+  'core-concepts': ['tools', 'agent', 'context-memory', 'permissions'],
+  'customization': ['claude-md', 'settings', 'skills', 'hook'],
+  'integrations':  ['mcp', 'plugin', 'ide-integrations'],
+  // L3 → L4 details
+  'tools':         ['tool-bash', 'tool-read', 'tool-webfetch', 'tool-task'],
+  'agent':         ['subagent', 'frontmatter'],
+  'skills':        ['skill', 'command', 'output-style', 'marketplace'],
+  'hook':          ['hook-pretooluse', 'hook-posttooluse', 'hook-stop'],
+  'claude-md':     ['claudemd-project', 'claudemd-global', 'claudemd-inheritance'],
+  'mcp':           ['mcp-config', 'mcp-protocol'],
+  'plugin':        ['plugin-yaml', 'plugin-publish'],
+};
+
+// Initialize every node with animScale and visibility
+nodes.forEach(n => {
+  n.animScale = n.id === 'claude-code' ? 1 : 0;
+  n.visible   = n.id === 'claude-code';
+});
+
+let navPath = []; // stack of node ids drilled into, e.g. [] → ['claude-code'] → ['claude-code','customization']
+
+const navBackBtn = document.getElementById('nav-back');
+
+function syncNavUI() {
+  if (navPath.length === 0) {
+    navBackBtn.style.display = 'none';
+    legend.style.display = '';
+  } else {
+    navBackBtn.style.display = 'block';
+    legend.style.display = 'none';
+    const focused = nodes.find(n => n.id === navPath[navPath.length - 1]);
+    navBackBtn.textContent = '← ' + (focused?.label.replace('\n', ' ') ?? 'back');
+  }
+}
+
+navBackBtn.addEventListener('click', () => goBack());
+
+function goDeeper(node) {
+  const children = CHILDREN[node.id] || [];
+  if (children.length > 0) {
+    // Hide current level siblings
+    const parentId = navPath.length > 0 ? navPath[navPath.length - 1] : null;
+    const currentSiblings = parentId ? (CHILDREN[parentId] || []) : ['claude-code'];
+    currentSiblings.forEach(id => {
+      if (id !== node.id) {
+        const n = nodes.find(n => n.id === id);
+        if (n) n.visible = false;
+      }
+    });
+    // Spawn children near clicked node
+    children.forEach(childId => {
+      const child = nodes.find(n => n.id === childId);
+      if (!child) return;
+      child.x  = node.x + (Math.random() - .5) * 20;
+      child.y  = node.y + (Math.random() - .5) * 20;
+      child.vx = (Math.random() - .5) * 5;
+      child.vy = (Math.random() - .5) * 5;
+      child.visible = true;
+    });
+    navPath.push(node.id);
+    closePanel();
+    syncNavUI();
+  } else {
+    openPanel(node);  // leaf — show details
+  }
+}
+
+function goBack() {
+  closePanel();
+  if (navPath.length === 0) return;
+  const focusedId = navPath[navPath.length - 1];
+  // Hide children of current focused node
+  (CHILDREN[focusedId] || []).forEach(childId => {
+    const child = nodes.find(n => n.id === childId);
+    if (child) child.visible = false;
+  });
+  navPath.pop();
+  // Re-show siblings at the level we're returning to
+  const parentId = navPath.length > 0 ? navPath[navPath.length - 1] : null;
+  const siblings = parentId ? (CHILDREN[parentId] || []) : ['claude-code'];
+  const anchor = nodes.find(n => n.id === focusedId);
+  siblings.forEach(id => {
+    const n = nodes.find(n => n.id === id);
+    if (!n || n.visible) return;
+    n.x  = (anchor?.x ?? getW()/2) + (Math.random() - .5) * 80;
+    n.y  = (anchor?.y ?? getH()/2) + (Math.random() - .5) * 80;
+    n.vx = (Math.random() - .5) * 2;
+    n.vy = (Math.random() - .5) * 2;
+    n.visible = true;
+  });
+  syncNavUI();
+}
 
 // ═══════════════════════════════════════════════════════════════
 // CANVAS SETUP
@@ -2143,22 +2967,59 @@ resize();
 function placeNodes() {
   const cx = getW() / 2, cy = getH() / 2;
   const pos = {
-    'claude-code':  [0,    0],
-    'agent':        [-185, -85],
-    'subagent':     [-310, -200],
-    'headless':     [165,  -185],
-    'plugin':       [205,  95],
-    'command':      [345,  195],
-    'skill':        [-75,  215],
-    'hook':         [285,  -55],
-    'output-style': [395,  65],
-    'marketplace':  [75,   -250],
-    'settings':     [-225, 165],
-    'mcp':          [125,  290],
-    'tools':        [-60,  175],
-    'frontmatter':  [195,  280],
-    'plan-mode':    [80,   -180],
-    'claude-md':    [-300, 85],
+    // L1
+    'claude-code':        [0,    0],
+    // L2 categories
+    'modes':              [-190, -110],
+    'core-concepts':      [190,  -110],
+    'customization':      [-190, 110],
+    'integrations':       [190,  110],
+    // L3 under modes
+    'interactive-mode':   [-290, -200],
+    'plan-mode':          [-130, -270],
+    'headless':           [60,   -280],
+    'agent-mode':         [230,  -220],
+    // L3 under core-concepts
+    'tools':              [320,  -100],
+    'agent':              [350,  0],
+    'context-memory':     [310,  110],
+    'permissions':        [240,  210],
+    // L3 under customization
+    'claude-md':          [-340, 60],
+    'settings':           [-370, -20],
+    'skills':             [-350, -130],
+    'hook':               [-260, 220],
+    // L3 under integrations
+    'mcp':                [100,  300],
+    'plugin':             [270,  320],
+    'ide-integrations':   [400,  240],
+    // L4 under agent
+    'subagent':           [420,  -60],
+    'frontmatter':        [440,  50],
+    // L4 under skills
+    'skill':              [-420, -160],
+    'command':            [-430, -70],
+    'output-style':       [-410, -250],
+    'marketplace':        [-320, -310],
+    // L4 under tools
+    'tool-bash':          [420,  -150],
+    'tool-read':          [450,  -60],
+    'tool-webfetch':      [450,  40],
+    'tool-task':          [410,  140],
+    // L4 under hook
+    'hook-pretooluse':    [-340, 300],
+    'hook-posttooluse':   [-220, 340],
+    'hook-stop':          [-100, 360],
+    // L4 under claude-md
+    'claudemd-project':   [-450, 130],
+    'claudemd-global':    [-470, 30],
+    'claudemd-inheritance':[-450, -80],
+    // L4 under mcp
+    'mcp-config':         [60,   400],
+    'mcp-protocol':       [210,  430],
+    // L4 under plugin
+    'plugin-yaml':        [380,  400],
+    'plugin-publish':     [470,  330],
   };
   nodes.forEach(n => {
     const p = pos[n.id];
@@ -2182,10 +3043,19 @@ window.addEventListener('resize', () => {
 function tick() {
   const cw = getW(), ch = getH();
 
-  // Repulsion between all pairs
-  for (let i = 0; i < nodes.length; i++) {
-    for (let j = i + 1; j < nodes.length; j++) {
-      const a = nodes[i], b = nodes[j];
+  // Animate scale for all nodes
+  nodes.forEach(n => {
+    const target = n.visible ? 1 : 0;
+    n.animScale += (target - n.animScale) * 0.1;
+    if (Math.abs(n.animScale - target) < 0.004) n.animScale = target;
+  });
+
+  const active = nodes.filter(n => n.animScale > 0.05);
+
+  // Repulsion between active pairs
+  for (let i = 0; i < active.length; i++) {
+    for (let j = i + 1; j < active.length; j++) {
+      const a = active[i], b = active[j];
       const dx = b.x - a.x, dy = b.y - a.y;
       const dist = Math.sqrt(dx * dx + dy * dy) || 1;
       const minD = (a.r + b.r) * 3.0;
@@ -2197,11 +3067,11 @@ function tick() {
     }
   }
 
-  // Spring along edges
+  // Spring along edges (only between active nodes)
   edges.forEach(e => {
     const a = nodes.find(n => n.id === e.from);
     const b = nodes.find(n => n.id === e.to);
-    if (!a || !b) return;
+    if (!a || !b || a.animScale < 0.05 || b.animScale < 0.05) return;
     const dx = b.x - a.x, dy = b.y - a.y;
     const dist = Math.sqrt(dx * dx + dy * dy) || 1;
     const target = (a.r + b.r) * 2.8 + 30;
@@ -2210,8 +3080,8 @@ function tick() {
     if (!b.dragging) { b.vx -= dx * f; b.vy -= dy * f; }
   });
 
-  // Gravity to center + damping + bounds
-  nodes.forEach(n => {
+  // Gravity to center + damping + bounds (active only)
+  active.forEach(n => {
     if (n.dragging) return;
     n.vx += (cw / 2 - n.x) * 0.0015;
     n.vy += (ch / 2 - n.y) * 0.0015;
@@ -2252,7 +3122,7 @@ function drawBgGrid() {
   ctx.restore();
 }
 
-function drawEdge(a, b, alpha, color, lineWidth) {
+function drawEdge(a, b, alpha, color, lineWidth, dashed) {
   const dx = b.x - a.x, dy = b.y - a.y;
   const dist = Math.sqrt(dx * dx + dy * dy) || 1;
   const ux = dx / dist, uy = dy / dist;
@@ -2274,10 +3144,12 @@ function drawEdge(a, b, alpha, color, lineWidth) {
   ctx.globalAlpha = alpha;
   ctx.strokeStyle = color;
   ctx.lineWidth = lineWidth;
+  if (dashed) ctx.setLineDash([5, 4]); else ctx.setLineDash([]);
   ctx.beginPath();
   ctx.moveTo(sx, sy);
   ctx.quadraticCurveTo(cpx, cpy, ex, ey);
   ctx.stroke();
+  ctx.setLineDash([]);
 
   // Arrow head
   const angle = Math.atan2(ey - cpy, ex - cpx);
@@ -2291,6 +3163,40 @@ function drawEdge(a, b, alpha, color, lineWidth) {
   ctx.restore();
 }
 
+function drawNavUI() {
+  const cw = getW(), ch = getH();
+
+  // "click to explore" hint at root level
+  if (navPath.length === 0) {
+    const cc = nodes.find(n => n.id === 'claude-code');
+    if (cc) {
+      ctx.save();
+      ctx.font = '400 10px "JetBrains Mono", monospace';
+      ctx.fillStyle = cssVar('--muted');
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+      ctx.fillText('click to explore', cc.x, cc.y + cc.r + 14);
+      ctx.restore();
+    }
+  }
+
+  // Breadcrumb trail at top of canvas when drilled in
+  if (navPath.length > 0) {
+    const crumbs = ['Claude Code', ...navPath.map(id => {
+      const n = nodes.find(n => n.id === id);
+      return n ? n.label.replace(/\n/g, ' ') : id;
+    })];
+    const crumb = crumbs.join(' › ');
+    ctx.save();
+    ctx.font = '400 9px "JetBrains Mono", monospace';
+    ctx.fillStyle = cssVar('--muted');
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    ctx.fillText(crumb, cw / 2, 14);
+    ctx.restore();
+  }
+}
+
 function draw() {
   const cw = getW(), ch = getH();
   ctx.clearRect(0, 0, cw, ch);
@@ -2300,38 +3206,47 @@ function draw() {
 
   const activeRef = selectedNode || hoveredNode;
 
-  // ── Edges ──────────────────────────────────────────────
+  // ── Edges (only between sufficiently visible nodes) ────
   edges.forEach(e => {
     const a = nodes.find(n => n.id === e.from);
     const b = nodes.find(n => n.id === e.to);
     if (!a || !b) return;
+    const ea = Math.min(a.animScale, b.animScale);
+    if (ea < 0.05) return;
+
     const active = activeRef
       ? (activeRef.id === a.id || activeRef.id === b.id)
       : false;
     const dim = activeRef && !active;
 
+    const dashed = e.style === 'ref';
     if (dim) {
-      drawEdge(a, b, 0.04, '#8b949e', 1);
+      drawEdge(a, b, 0.04 * ea, '#8b949e', 1, dashed);
     } else if (active) {
-      // Use the source node's color for active edges
-      const edgeColor = COLORS[a.cat];
-      drawEdge(a, b, 0.55, edgeColor, 1.5);
+      drawEdge(a, b, 0.55 * ea, COLORS[a.cat], 1.5, dashed);
     } else {
-      drawEdge(a, b, 0.1, 'rgba(212,168,83,0.6)', 1);
+      drawEdge(a, b, 0.1 * ea, 'rgba(212,168,83,0.6)', 1, dashed);
     }
   });
 
   // ── Nodes ──────────────────────────────────────────────
   nodes.forEach(n => {
+    if (n.animScale < 0.005) return;
+
     const color = COLORS[n.cat];
     const isSelected = selectedNode && selectedNode.id === n.id;
     const isHovered  = !selectedNode && hoveredNode && hoveredNode.id === n.id;
     const connected  = activeRef ? isConnected(activeRef, n) : false;
     const dim        = activeRef && !connected;
 
-    ctx.globalAlpha = dim ? 0.18 : 1;
+    // Scale transform centred on the node
+    ctx.save();
+    ctx.translate(n.x, n.y);
+    ctx.scale(n.animScale, n.animScale);
+    ctx.translate(-n.x, -n.y);
+    ctx.globalAlpha = (dim ? 0.18 : 1) * n.animScale;
 
-    // Pulse ring on central node
+    // Pulse ring on claude-code
     if (n.id === 'claude-code' && !dim) {
       const pr = n.r + 12 + 10 * Math.sin(pulseT);
       const pulse = ctx.createRadialGradient(n.x, n.y, n.r, n.x, n.y, pr + 6);
@@ -2369,10 +3284,7 @@ function draw() {
 
     // Circle stroke
     ctx.save();
-    if (isSelected) {
-      ctx.shadowBlur = 12;
-      ctx.shadowColor = color;
-    }
+    if (isSelected) { ctx.shadowBlur = 12; ctx.shadowColor = color; }
     ctx.strokeStyle = color + (isSelected ? 'ff' : isHovered ? 'ee' : connected && activeRef ? 'cc' : 'aa');
     ctx.lineWidth = isSelected ? 2.5 : isHovered ? 2 : 1.5;
     ctx.beginPath();
@@ -2395,8 +3307,10 @@ function draw() {
       ctx.fillText(line, n.x, n.y + (i - (lines.length - 1) / 2) * lh);
     });
 
-    ctx.globalAlpha = 1;
+    ctx.restore(); // restores transform + globalAlpha
   });
+
+  drawNavUI();
 }
 
 function cssVar(name) {
@@ -2562,7 +3476,7 @@ let dragging = null, dragOffX = 0, dragOffY = 0;
 let mouseDownNode = null, mouseDownTime = 0;
 
 function getNodeAt(mx, my) {
-  return nodes.find(n => Math.hypot(n.x - mx, n.y - my) < n.r) || null;
+  return nodes.find(n => n.animScale > 0.5 && Math.hypot(n.x - mx, n.y - my) < n.r) || null;
 }
 
 canvas.addEventListener('mousemove', e => {
@@ -2584,7 +3498,11 @@ canvas.addEventListener('mousemove', e => {
     ttName.textContent = hoveredNode.label.replace('\n', ' ');
     ttName.style.color = color;
     ttDesc.textContent = hoveredNode.short;
-    ttCat.textContent  = `${CAT_LABELS[hoveredNode.cat]} · click for examples →`;
+    const hasChildren = !!(CHILDREN[hoveredNode.id]?.length);
+    const isRoot = navPath.length === 0 && hoveredNode.id === 'claude-code';
+    ttCat.textContent = (isRoot || hasChildren)
+      ? `${CAT_LABELS[hoveredNode.cat] || hoveredNode.cat} · click to expand →`
+      : `${CAT_LABELS[hoveredNode.cat] || hoveredNode.cat} · click for details →`;
     tooltip.style.opacity = '1';
     let tx = e.clientX + 16, ty = e.clientY - 10;
     if (tx + 250 > window.innerWidth)  tx = e.clientX - 266;
@@ -2625,22 +3543,19 @@ canvas.addEventListener('mouseup', e => {
     dragging = null;
   }
 
-  // Short press on same node = click
+  // Short press = click
   if (elapsed < 250 && upNode && upNode === mouseDownNode) {
     tooltip.style.opacity = '0';
-    openPanel(upNode);
+    goDeeper(upNode);
+  } else if (elapsed < 250 && !upNode && selectedNode) {
+    closePanel();
   }
 
   canvas.style.cursor = hoveredNode ? 'pointer' : 'default';
   mouseDownNode = null;
 });
 
-canvas.addEventListener('click', e => {
-  const rect = canvas.getBoundingClientRect();
-  const mx = e.clientX - rect.left;
-  const my = e.clientY - rect.top;
-  if (!getNodeAt(mx, my) && selectedNode) closePanel();
-});
+// (close panel / back button handled in mouseup)
 
 canvas.addEventListener('mouseleave', () => {
   tooltip.style.opacity = '0';
@@ -2664,7 +3579,7 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 
     if (btn.dataset.tab === 'graph') {
       canvasWrap.style.display = '';
-      legend.style.display = '';
+      legend.style.display = navPath.length === 0 ? '' : 'none';
       hint.style.display = '';
       refPanel.classList.remove('active');
     } else {

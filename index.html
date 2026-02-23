@@ -2875,8 +2875,7 @@ function syncNavUI() {
   } else {
     navBackBtn.style.display = 'block';
     legend.style.display = 'none';
-    const focused = nodes.find(n => n.id === navPath[navPath.length - 1]);
-    navBackBtn.textContent = '← ' + (focused?.label.replace('\n', ' ') ?? 'back');
+    navBackBtn.textContent = '← back';
   }
 }
 
@@ -2913,7 +2912,7 @@ function goDeeper(node) {
 }
 
 function goBack() {
-  closePanel();
+  if (panel.classList.contains('open')) { closePanel(); return; }
   if (navPath.length === 0) return;
   const focusedId = navPath[navPath.length - 1];
   // Hide children of current focused node

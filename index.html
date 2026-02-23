@@ -1,0 +1,1543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Code · Concept Map</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:       #090c12;
+  --surf:     #0e1220;
+  --surf2:    #131826;
+  --border:   #1b2235;
+  --border2:  #242e45;
+  --text:     #ddd6c3;
+  --dim:      #7d7566;
+  --muted:    #424955;
+  --accent:   #d4a853;
+  --accent-b: rgba(212,168,83,.14);
+  --accent-r: rgba(212,168,83,.3);
+}
+
+html, body {
+  width: 100%; height: 100%; overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+/* ── TOP BAR ─────────────────────────────────────────────────── */
+#topbar {
+  position: fixed; top: 0; left: 0; right: 0; height: 48px;
+  background: rgba(9,12,18,.92);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; padding: 0 24px; gap: 16px;
+  z-index: 30; backdrop-filter: blur(12px);
+}
+#topbar-logo {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 17px; font-weight: 700; font-style: italic;
+  color: var(--accent); letter-spacing: -.2px;
+}
+#topbar-sep { color: var(--border2); font-size: 20px; font-weight: 200; }
+#topbar-sub {
+  font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--dim);
+}
+#topbar-hint {
+  margin-left: auto;
+  font-size: 10px; color: var(--muted); letter-spacing: .05em;
+}
+
+/* ── CANVAS ───────────────────────────────────────────────────── */
+#canvas-wrap {
+  position: fixed; inset: 48px 0 0 0; z-index: 1;
+}
+canvas { display: block; width: 100%; height: 100%; cursor: default; }
+
+/* ── TOOLTIP ──────────────────────────────────────────────────── */
+#tooltip {
+  position: fixed; z-index: 40; pointer-events: none;
+  background: var(--surf2);
+  border: 1px solid var(--border2);
+  border-radius: 8px; padding: 11px 15px;
+  max-width: 230px; opacity: 0;
+  transition: opacity .12s ease;
+  box-shadow: 0 8px 32px rgba(0,0,0,.55);
+}
+#tooltip h3 {
+  font-family: 'Playfair Display', serif; font-size: 14px; font-weight: 700;
+  color: var(--accent); margin-bottom: 5px; letter-spacing: -.1px;
+}
+#tooltip p { font-size: 11px; color: var(--dim); line-height: 1.5; }
+#tooltip .tt-cat {
+  font-size: 9px; text-transform: uppercase; letter-spacing: .1em;
+  margin-top: 7px; color: var(--muted);
+}
+
+/* ── SIDE PANEL ───────────────────────────────────────────────── */
+#panel {
+  position: fixed; top: 48px; right: 0; bottom: 0;
+  width: 440px; z-index: 20;
+  background: var(--surf);
+  border-left: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  transform: translateX(100%);
+  transition: transform .36s cubic-bezier(.4,0,.2,1);
+  box-shadow: -20px 0 60px rgba(0,0,0,.4);
+}
+#panel.open { transform: translateX(0); }
+
+/* Panel header */
+.p-head {
+  padding: 24px 24px 18px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0; position: relative;
+}
+.p-cat {
+  font-size: 9px; text-transform: uppercase; letter-spacing: .14em;
+  margin-bottom: 8px;
+}
+.p-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 24px; font-weight: 700;
+  color: var(--text); line-height: 1.2;
+  margin-bottom: 10px;
+}
+#p-badges { display: flex; gap: 7px; flex-wrap: wrap; }
+
+.badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 9px; border-radius: 20px;
+  font-size: 10px; letter-spacing: .03em; border: 1px solid;
+}
+.badge-user   { background: #0c1e30; border-color: #1e5a8a; color: #5aaaf0; }
+.badge-claude { background: #16142a; border-color: #5040a0; color: #c0a8f8; }
+.badge-both   { background: #0e1e12; border-color: #2a7040; color: #55d46a; }
+.badge-system { background: #151a15; border-color: #35453a; color: #70a07a; }
+.badge-cat    {
+  padding: 3px 9px; border-radius: 20px; font-size: 10px;
+  letter-spacing: .03em; border: 1px solid;
+}
+
+#p-close {
+  position: absolute; top: 20px; right: 20px;
+  background: none; border: 1px solid var(--border2);
+  border-radius: 5px; color: var(--dim); cursor: pointer;
+  width: 26px; height: 26px; display: flex; align-items: center;
+  justify-content: center; font-size: 14px; line-height: 1;
+  transition: border-color .15s, color .15s, background .15s;
+  font-family: inherit;
+}
+#p-close:hover { border-color: var(--accent-r); color: var(--accent); background: var(--accent-b); }
+
+/* Panel scroll body */
+.p-body {
+  flex: 1; overflow-y: auto; padding: 20px 24px 36px;
+  scrollbar-width: thin; scrollbar-color: var(--border2) transparent;
+}
+.p-body::-webkit-scrollbar { width: 4px; }
+.p-body::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+.p-desc {
+  font-size: 13px; line-height: 1.8; color: #b0a898;
+  margin-bottom: 20px; font-family: 'JetBrains Mono', monospace;
+  font-weight: 300;
+}
+
+.p-doc-link {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 8px 14px; border-radius: 6px; margin-bottom: 22px;
+  background: var(--accent-b); border: 1px solid var(--accent-r);
+  color: var(--accent); font-size: 11px; text-decoration: none;
+  letter-spacing: .04em; transition: background .15s, border-color .15s;
+}
+.p-doc-link:hover { background: rgba(212,168,83,.22); border-color: rgba(212,168,83,.5); }
+.p-doc-link svg { flex-shrink: 0; opacity: .7; }
+
+/* Code accordion */
+.code-block {
+  border: 1px solid var(--border); border-radius: 8px;
+  overflow: hidden; margin-bottom: 10px;
+}
+.cb-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 9px 13px; background: var(--surf2); cursor: pointer;
+  user-select: none; gap: 10px;
+}
+.cb-head:hover { background: #181f30; }
+.cb-label {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 11px; color: var(--dim); min-width: 0; overflow: hidden;
+}
+.cb-filename {
+  color: var(--text); font-weight: 500; font-size: 10.5px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.cb-sublabel {
+  color: var(--muted); font-size: 10px; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis; flex-shrink: 1;
+}
+.cb-chevron {
+  font-size: 9px; color: var(--muted); flex-shrink: 0;
+  transition: transform .22s; line-height: 1;
+}
+.cb-chevron.open { transform: rotate(90deg); }
+.cb-body {
+  max-height: 0; overflow: hidden;
+  transition: max-height .28s cubic-bezier(.4,0,.2,1);
+}
+.cb-body.open { max-height: 700px; }
+.cb-body pre {
+  margin: 0 !important; border-radius: 0 !important; border: none !important;
+  font-size: 11.5px !important; line-height: 1.65 !important;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace !important;
+}
+.cb-body pre::-webkit-scrollbar { height: 4px; }
+.cb-body pre::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+/* Related chips */
+.p-related-title {
+  font-size: 9px; text-transform: uppercase; letter-spacing: .12em;
+  color: var(--muted); margin: 22px 0 10px;
+}
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  padding: 4px 11px; border-radius: 6px; font-size: 10.5px;
+  border: 1px solid var(--border); color: var(--dim); cursor: pointer;
+  background: var(--surf2); letter-spacing: .02em;
+  transition: border-color .15s, color .15s, background .15s;
+}
+.chip:hover { border-color: var(--accent-r); color: var(--accent); background: var(--accent-b); }
+
+/* ── LEGEND ───────────────────────────────────────────────────── */
+#legend {
+  position: fixed; bottom: 20px; left: 20px; z-index: 10;
+  background: rgba(14,18,32,.88); border: 1px solid var(--border);
+  border-radius: 10px; padding: 13px 16px;
+  backdrop-filter: blur(10px);
+}
+.leg-title {
+  font-size: 8px; text-transform: uppercase; letter-spacing: .15em;
+  color: var(--muted); margin-bottom: 10px;
+}
+.leg-item { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.leg-item:last-child { margin-bottom: 0; }
+.leg-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.leg-label { font-size: 10px; color: var(--dim); }
+
+/* ── HLJS overrides ───────────────────────────────────────────── */
+.hljs { background: #0d1117 !important; padding: 14px 16px !important; }
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <span id="topbar-logo">Claude Code</span>
+  <span id="topbar-sep">·</span>
+  <span id="topbar-sub">Concept Map</span>
+  <span id="topbar-hint">hover to preview · click to explore</span>
+</div>
+
+<div id="canvas-wrap"><canvas id="c"></canvas></div>
+
+<div id="tooltip">
+  <h3 id="tt-name"></h3>
+  <p id="tt-desc"></p>
+  <p class="tt-cat" id="tt-cat"></p>
+</div>
+
+<div id="panel">
+  <div class="p-head">
+    <div class="p-cat" id="p-cat"></div>
+    <div class="p-title" id="p-title"></div>
+    <div id="p-badges"></div>
+    <button id="p-close">✕</button>
+  </div>
+  <div class="p-body">
+    <p class="p-desc" id="p-desc"></p>
+    <div id="p-doclink"></div>
+    <div id="p-examples"></div>
+    <div id="p-related"></div>
+  </div>
+</div>
+
+<div id="legend">
+  <div class="leg-title">Category</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#d4a853"></div><span class="leg-label">Core</span></div>
+  <div class="leg-item"><div class="leg-dot" style="background:#c46e5a"></div><span class="leg-label">Extensibility</span></div>
+  <div class="leg-item"><div class="leg-dot" style="background:#5a8fc4"></div><span class="leg-label">Distribution</span></div>
+  <div class="leg-item"><div class="leg-dot" style="background:#5ea878"></div><span class="leg-label">Configuration</span></div>
+  <div class="leg-item"><div class="leg-dot" style="background:#9070c4"></div><span class="leg-label">Integration</span></div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════════════════════
+
+const COLORS = {
+  core:          '#d4a853',
+  extensibility: '#c46e5a',
+  distribution:  '#5a8fc4',
+  config:        '#5ea878',
+  integration:   '#9070c4',
+};
+
+const CAT_LABELS = {
+  core: 'Core', extensibility: 'Extensibility',
+  distribution: 'Distribution', config: 'Configuration', integration: 'Integration',
+};
+
+const INITIATED = {
+  user:   { label: '↑ User-invoked',     cls: 'badge-user',   tip: 'You explicitly trigger this' },
+  claude: { label: '⟳ Claude-invoked',   cls: 'badge-claude', tip: 'Claude decides when to use this' },
+  both:   { label: '↕ User or Claude',   cls: 'badge-both',   tip: 'Either party can trigger this' },
+  system: { label: '⚙ System-triggered', cls: 'badge-system', tip: 'Fires on lifecycle events' },
+};
+
+const nodes = [
+  {
+    id: 'claude-code', label: 'Claude Code', cat: 'core', r: 40,
+    initiated: 'both',
+    short: 'The agentic AI coding assistant. Everything else extends or configures it.',
+    desc: 'Claude Code is Anthropic\'s agentic coding assistant. It can read, edit, and reason about your codebase, run commands, browse docs, and delegate tasks to subagents — all from a terminal or web interface.',
+    doc: 'https://docs.anthropic.com/en/docs/claude-code/overview',
+    docLabel: 'Claude Code overview',
+    examples: [
+      {
+        filename: 'Project structure',
+        label: 'Where Claude Code config lives',
+        lang: 'plaintext',
+        code: `.claude/
+├── settings.json        ← behavior, hooks, plugins
+├── CLAUDE.md            ← project context (always read)
+├── agents/              ← custom subagent definitions
+│   └── code-reviewer.md
+├── skills/              ← Agent Skills (model-invoked)
+│   └── pdf-processing/SKILL.md
+├── commands/            ← Slash commands (user-invoked)
+│   └── review.md
+└── rules/               ← reusable rule snippets
+    └── code-style.md
+.mcp.json                ← MCP server config`,
+      },
+      {
+        filename: 'CLAUDE.md',
+        label: 'Project context Claude always reads',
+        lang: 'markdown',
+        code: `# My Project
+
+Always read \`.claude/rules/code-style.md\` before writing code.
+
+## Stack
+- TypeScript, React, Node 20
+- Postgres via Drizzle ORM
+- Vitest for tests
+
+## Conventions
+- API routes live in \`src/routes/\`
+- Use named exports, never default exports
+- Run \`npm test\` before marking any task done`,
+      },
+    ],
+  },
+  {
+    id: 'agent', label: 'Agent', cat: 'core', r: 30,
+    initiated: 'both',
+    short: 'A pre-configured AI personality for a specific task domain.',
+    desc: 'Agents are pre-configured AI personalities with custom system prompts, tool access, and their own context window. Claude Code can delegate to them automatically or you can invoke them with "Use the X agent to…".',
+    doc: 'https://docs.anthropic.com/en/docs/claude-code/sub-agents',
+    docLabel: 'Subagents docs',
+    examples: [
+      {
+        filename: '.claude/agents/code-reviewer.md',
+        label: 'Example: Code Reviewer agent',
+        lang: 'markdown',
+        code: `---
+name: code-reviewer
+description: Reviews code for best practices, security, and
+  performance. Invoked automatically after code changes or
+  when asked to review.
+tools: Read, Grep, Glob
+model: claude-sonnet-4-6
+---
+
+You are a senior code reviewer. For every review:
+
+1. Check code organization and structure
+2. Look for error handling gaps
+3. Flag security concerns (injections, secrets in source)
+4. Suggest performance improvements
+5. Verify test coverage exists
+
+Group findings by severity: Critical / Warning / Info.`,
+      },
+      {
+        filename: '.claude/agents/debugger.md',
+        label: 'Example: Debugger agent',
+        lang: 'markdown',
+        code: `---
+name: debugger
+description: Diagnoses bugs and runtime errors. Use when
+  something is broken and you need root-cause analysis.
+tools: Read, Bash, Grep, Glob
+model: claude-opus-4-6
+---
+
+You are an expert debugger. When given a bug:
+
+1. Reproduce the error with minimal steps
+2. Trace the execution path to find root cause
+3. Propose a fix with explanation of why it works
+4. Add a regression test to prevent recurrence
+
+Never guess — gather evidence first.`,
+      },
+    ],
+  },
+  {
+    id: 'subagent', label: 'Subagent\n(Task)', cat: 'core', r: 24,
+    initiated: 'claude',
+    short: 'A child agent Claude autonomously spawns to handle a subtask.',
+    desc: 'When Claude Code uses the Task tool, it spins up a subagent with its own isolated context window. Subagents work independently and return results to the parent — preventing context pollution and enabling parallel work.',
+    doc: 'https://docs.anthropic.com/en/docs/claude-code/sub-agents',
+    docLabel: 'Subagents docs',
+    examples: [
+      {
+        filename: '.claude/agents/data-analyst.md',
+        label: 'Example agent Claude auto-delegates to',
+        lang: 'markdown',
+        code: `---
+name: data-analyst
+description: Analyzes CSV and JSON datasets, produces
+  summaries and charts. Invoked automatically when working
+  with data files or asked to analyze tabular data.
+tools: Read, Bash, Glob
+model: claude-sonnet-4-6
+---
+
+You are a data analyst. When given a dataset:
+
+1. Inspect structure and data types first
+2. Identify missing values and outliers
+3. Compute summary statistics
+4. Generate a Markdown summary with key findings
+5. Suggest follow-up analyses if useful`,
+      },
+    ],
+  },
+  {
+    id: 'headless', label: 'Headless\nMode', cat: 'core', r: 22,
+    initiated: 'user',
+    short: 'Run Claude Code non-interactively — for CI/CD and scripting.',
+    desc: 'Headless mode lets you run Claude Code without a UI via the CLI, making it ideal for automation, CI pipelines, and scripts. Pass a prompt with -p and pipe output to other tools.',
+    doc: 'https://docs.anthropic.com/en/docs/claude-code/cli-reference',
+    docLabel: 'CLI reference docs',
+    examples: [
+      {
+        filename: 'shell',
+        label: 'Headless CLI usage',
+        lang: 'bash',
+        code: `# One-shot prompt
+claude -p "Fix all TypeScript errors in src/"
+
+# Pipe a diff for review
+git diff HEAD~1 | claude -p "Flag any security issues in this diff"
+
+# JSON output for scripting
+claude -p "List all TODO comments" --output-format json | jq .
+
+# Use in a CI step
+claude -p "Run tests and fix failures" --allowedTools Bash,Read,Edit`,
+      },
+      {
+        filename: '.github/workflows/review.yml',
+        label: 'GitHub Actions CI step',
+        lang: 'yaml',
+        code: `- name: Claude Code review
+  run: |
+    claude -p "Review the PR diff for security issues.
+    Output a Markdown summary." \\
+    --output-format text \\
+    > review.md
+  env:
+    ANTHROPIC_API_KEY: \${{ secrets.ANTHROPIC_API_KEY }}`,
+      },
+    ],
+  },
+  {
+    id: 'plugin', label: 'Plugin', cat: 'extensibility', r: 34,
+    initiated: 'user',
+    short: 'A shareable bundle of commands, agents, skills, hooks, and MCP servers.',
+    desc: 'Plugins extend Claude Code with custom functionality packaged as a directory. They can include slash commands, subagent definitions, Agent Skills, hooks, and MCP server configs — all shareable via a marketplace.',
+    doc: 'https://docs.anthropic.com/en/docs/claude-code/plugins',
+    docLabel: 'Plugins docs',
+    examples: [
+      {
+        filename: 'Plugin directory structure',
+        label: 'Standard plugin layout',
+        lang: 'plaintext',
+        code: `my-plugin/
+├── .claude-plugin/
+│   └── plugin.json       ← manifest (required)
+├── commands/
+│   └── deploy.md         ← slash commands
+├── agents/
+│   └── deployer.md       ← subagent definitions
+├── skills/
+│   └── k8s/SKILL.md      ← Agent Skills
+├── hooks/
+│   └── hooks.json        ← lifecycle hooks
+└── .mcp.json             ← MCP server config`,
+      },
+      {
+        filename: '.claude-plugin/plugin.json',
+        label: 'Plugin manifest',
+        lang: 'json',
+        code: `{
+  "name": "deploy-toolkit",
+  "version": "1.0.0",
+  "description": "Kubernetes deployment commands and agents",
+  "author": { "name": "My Org", "email": "dev@example.com" },
+  "license": "MIT",
+  "keywords": ["kubernetes", "deployment", "ci-cd"]
+}`,
+      },
+    ],
+  },
+  {
+    id: 'command', label: 'Slash\nCommand', cat: 'extensibility', r: 24,
+    initiated: 'user',
+    short: 'A custom /command you type explicitly to trigger a workflow.',
+    desc: 'Slash commands are user-invoked — you type /command-name to run them. Defined as Markdown files, Claude reads the file and follows its instructions when you invoke the command. Project commands live in .claude/commands/.',
+    doc: 'https://docs.anthropic.com/en/docs/claude-code/slash-commands',
+    docLabel: 'Slash commands docs',
+    examples: [
+      {
+        filename: 'File location',
+        label: 'Where slash commands live',
+        lang: 'plaintext',
+        code: `.claude/
+└── commands/
+    ├── review.md          ← /review
+    ├── deploy.md          ← /deploy
+    └── standup.md         ← /standup
+
+~/.claude/commands/        ← personal commands (all projects)`,
+      },
+      {
+        filename: '.claude/commands/review.md',
+        label: 'Example: /review command',
+        lang: 'markdown',
+        code: `---
+description: Run a full code review on staged changes
+---
+
+# Code Review
+
+1. Run \`git diff --staged\` to see what's changing
+2. For each changed file, check:
+   - Logic correctness and edge cases
+   - Error handling completeness
+   - Security concerns
+   - Test coverage
+3. Summarize findings by severity: Critical / Warning / Info
+4. Suggest specific fixes with file and line references`,
+      },
+      {
+        filename: '.claude/commands/standup.md',
+        label: 'Example: /standup command',
+        lang: 'markdown',
+        code: `---
+description: Generate a standup from recent git activity
+---
+
+# Daily Standup
+
+1. Run \`git log --since="24 hours ago" --oneline\`
+2. Group commits by feature area
+3. Output a Markdown standup:
+   - **Yesterday**: what was completed
+   - **Today**: what's planned
+   - **Blockers**: failing tests or open issues`,
+      },
+    ],
+  },
+  {
+    id: 'skill', label: 'Agent\nSkill', cat: 'extensibility', r: 26,
+    initiated: 'claude',
+    short: 'Claude autonomously decides when to use this based on your request.',
+    desc: 'Agent Skills are model-invoked — you don\'t call them, Claude does. Each skill is a folder with a SKILL.md file whose description tells Claude when to activate it. When your request matches, Claude reads the instructions and follows them.',
+    doc: 'https://docs.anthropic.com/en/docs/claude-code/skills',
+    docLabel: 'Agent Skills docs',
+    examples: [
+      {
+        filename: 'File location',
+        label: 'Where skills live',
+        lang: 'plaintext',
+        code: `.claude/
+└── skills/
+    ├── commit-helper/
+    │   └── SKILL.md       ← auto-used when writing commits
+    ├── pdf-processing/
+    │   ├── SKILL.md
+    │   └── scripts/extract.py
+    └── api-docs/
+        ├── SKILL.md
+        └── reference.md
+
+~/.claude/skills/          ← personal skills (all projects)`,
+      },
+      {
+        filename: '.claude/skills/commit-helper/SKILL.md',
+        label: 'Example: Commit message skill',
+        lang: 'markdown',
+        code: `---
+name: generating-commit-messages
+description: Generates clear, conventional commit messages
+  from git diffs. Use when writing commit messages or
+  reviewing staged changes.
+---
+
+# Generating Commit Messages
+
+## Instructions
+
+1. Run \`git diff --staged\` to see changes
+2. Identify type: feat / fix / chore / docs / refactor / test
+3. Write a summary under 50 characters
+4. Add a body explaining *why*, not just *what*
+
+## Format
+\`\`\`
+<type>(<scope>): <summary under 50 chars>
+
+<body: explain motivation and impact>
+\`\`\``,
+      },
+      {
+        filename: '.claude/skills/pdf-processing/SKILL.md',
+        label: 'Example: PDF processing skill',
+        lang: 'markdown',
+        code: `---
+name: pdf-processing
+description: Extract text, fill forms, merge PDFs. Use when
+  working with PDF files or document extraction.
+allowed-tools: Read, Bash
+---
+
+# PDF Processing
+
+\`\`\`python
+import pdfplumber
+with pdfplumber.open("doc.pdf") as pdf:
+    text = pdf.pages[0].extract_text()
+print(text)
+\`\`\`
+
+## Requirements
+\`pip install pypdf pdfplumber\``,
+      },
+    ],
+  },
+  {
+    id: 'hook', label: 'Hook', cat: 'extensibility', r: 23,
+    initiated: 'system',
+    short: 'Runs automatically on Claude Code lifecycle events.',
+    desc: 'Hooks fire on events like PreToolUse, PostToolUse, Stop, SessionStart, and UserPromptSubmit. They can allow/deny actions, inject context, run formatters, send notifications, or validate commands — without user interaction.',
+    doc: 'https://docs.anthropic.com/en/docs/claude-code/hooks',
+    docLabel: 'Hooks guide',
+    examples: [
+      {
+        filename: '.claude/settings.json',
+        label: 'Format on write + validate prompts',
+        lang: 'json',
+        code: `{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [{
+          "type": "command",
+          "command": "prettier --write \\"$TOOL_INPUT_FILE_PATH\\"",
+          "timeout": 30
+        }]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [{
+          "type": "command",
+          "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/validate-prompt.sh"
+        }]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [{
+          "type": "command",
+          "command": "echo \\"Session: $(date)\\" >> ~/.claude/sessions.log"
+        }]
+      }
+    ]
+  }
+}`,
+      },
+      {
+        filename: '.claude/hooks/validate-prompt.sh',
+        label: 'Example: Prompt validator script',
+        lang: 'bash',
+        code: `#!/bin/bash
+# Receives hook input via stdin as JSON
+INPUT=$(cat)
+PROMPT=$(echo "$INPUT" | jq -r '.prompt')
+
+# Block prompts containing raw secrets
+if echo "$PROMPT" | grep -qiE '(password|api_key|secret)\\s*[:=]\\s*\\S+'; then
+  echo "Blocked: prompt appears to contain a secret" >&2
+  exit 2
+fi
+
+# Inject current branch as context
+BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
+echo "Current git branch: $BRANCH"
+exit 0`,
+      },
+    ],
+  },
+  {
+    id: 'output-style', label: 'Output\nStyle', cat: 'extensibility', r: 20,
+    initiated: 'user',
+    short: 'Customize how Claude formats and presents its responses.',
+    desc: 'Output styles modify Claude\'s system prompt to change tone, verbosity, and format. Built-ins include Default and Explanatory. You can write custom styles as Markdown files and activate them with /output-style.',
+    doc: 'https://docs.anthropic.com/en/docs/claude-code/output-styles',
+    docLabel: 'Output styles docs',
+    examples: [
+      {
+        filename: 'File location',
+        label: 'Where output styles live',
+        lang: 'plaintext',
+        code: `.claude/output-styles/
+└── concise.md         ← project-level style
+
+~/.claude/output-styles/   ← personal styles
+
+# Activate with:
+# /output-style concise`,
+      },
+      {
+        filename: '.claude/output-styles/concise.md',
+        label: 'Example: Concise output style',
+        lang: 'markdown',
+        code: `---
+name: Concise
+description: Ultra-brief responses — bullets over prose,
+  no preamble, no affirmations.
+keep-coding-instructions: true
+---
+
+Respond as briefly as possible at all times.
+- Use bullet points instead of prose
+- Never explain your reasoning unless explicitly asked
+- Skip all pleasantries: no "Great!", "Sure!", "Of course!"
+- For code: show the code, skip the explanation
+- If you need to clarify, ask only one question`,
+      },
+    ],
+  },
+  {
+    id: 'marketplace', label: 'Marketplace', cat: 'distribution', r: 28,
+    initiated: 'user',
+    short: 'A catalog of plugins — local folder, Git repo, or hosted registry.',
+    desc: 'A marketplace is a directory or Git repository with a marketplace.json listing available plugins. Register marketplaces in settings.json and install plugins from them — great for sharing tooling across a team or org.',
+    doc: 'https://docs.anthropic.com/en/docs/claude-code/plugin-marketplaces',
+    docLabel: 'Plugin marketplaces docs',
+    examples: [
+      {
+        filename: 'marketplace.json',
+        label: 'Marketplace manifest',
+        lang: 'json',
+        code: `{
+  "name": "my-org-plugins",
+  "owner": { "name": "My Org" },
+  "plugins": [
+    {
+      "name": "code-reviewer",
+      "source": "./code-reviewer",
+      "description": "Automated code review tools"
+    },
+    {
+      "name": "deploy-helper",
+      "source": "./deploy-helper",
+      "description": "Kubernetes deployment commands"
+    }
+  ]
+}`,
+      },
+      {
+        filename: '.claude/settings.json',
+        label: 'Register & install from a marketplace',
+        lang: 'json',
+        code: `{
+  "plugins": {
+    "marketplaces": [
+      "github.com/my-org/claude-plugins"
+    ],
+    "installed": [
+      "code-reviewer@my-org",
+      "deploy-helper@my-org"
+    ]
+  }
+}`,
+      },
+    ],
+  },
+  {
+    id: 'settings', label: 'Settings', cat: 'config', r: 24,
+    initiated: 'user',
+    short: '.claude/settings.json — configures hooks, plugins, permissions, and more.',
+    desc: 'Settings files configure Claude Code at user, project, or enterprise level. They control hooks, auto-installed plugins, permission modes, and other behavior. Project settings are committed to git and shared with the team.',
+    doc: 'https://docs.anthropic.com/en/docs/claude-code/settings',
+    docLabel: 'Settings docs',
+    examples: [
+      {
+        filename: 'File hierarchy',
+        label: 'Settings file precedence',
+        lang: 'plaintext',
+        code: `~/.claude/settings.json          ← user-level (all projects)
+.claude/settings.json            ← project-level (git-committed)
+.claude/settings.local.json      ← local overrides (gitignored)
+
+Priority: local > project > user > enterprise`,
+      },
+      {
+        filename: '.claude/settings.json',
+        label: 'Example: Full project settings',
+        lang: 'json',
+        code: `{
+  "plugins": {
+    "marketplaces": ["github.com/my-org/claude-plugins"],
+    "installed": ["code-reviewer@my-org"]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [{
+          "type": "command",
+          "command": "prettier --write \\"$TOOL_INPUT_FILE_PATH\\""
+        }]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": ["Bash(npm run *)", "Bash(git *)"],
+    "deny": ["Bash(rm -rf *)"]
+  }
+}`,
+      },
+    ],
+  },
+  {
+    id: 'mcp', label: 'MCP\nServer', cat: 'integration', r: 27,
+    initiated: 'claude',
+    short: 'Connects Claude to external tools, APIs, and data sources.',
+    desc: 'MCP (Model Context Protocol) servers expose tools that Claude autonomously calls — databases, GitHub, JIRA, Sentry, file systems, and more. Servers can be local (stdio) or remote (HTTP/SSE). Config lives in .mcp.json.',
+    doc: 'https://docs.anthropic.com/en/docs/claude-code/mcp',
+    docLabel: 'MCP docs',
+    examples: [
+      {
+        filename: '.mcp.json',
+        label: 'GitHub + Postgres MCP servers',
+        lang: 'json',
+        code: `{
+  "mcpServers": {
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "\${GITHUB_TOKEN}"
+      }
+    },
+    "postgres": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-postgres",
+        "postgresql://localhost/mydb"
+      ]
+    },
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "."]
+    }
+  }
+}`,
+      },
+      {
+        filename: 'shell',
+        label: 'Manage MCP servers via CLI',
+        lang: 'bash',
+        code: `# Add a remote HTTP server
+claude mcp add --transport http notion https://mcp.notion.com/mcp
+
+# Add a local stdio server
+claude mcp add --transport stdio github \\
+  npx -y @modelcontextprotocol/server-github
+
+# List configured servers
+claude mcp list
+
+# Remove a server
+claude mcp remove github`,
+      },
+    ],
+  },
+  {
+    id: 'tools', label: 'Tools', cat: 'core', r: 26,
+    initiated: 'claude',
+    short: 'The built-in primitives Claude uses to read, write, run, and browse.',
+    desc: 'Tools are the atomic operations Claude calls to interact with your environment — reading files, running shell commands, searching code, browsing the web. Agents declare which tools they can access; MCP servers add new ones; permissions control which run automatically.',
+    doc: 'https://docs.anthropic.com/en/docs/claude-code/tools',
+    docLabel: 'Tools reference',
+    examples: [
+      {
+        filename: 'Built-in tool reference',
+        label: 'All tools available to Claude Code',
+        lang: 'plaintext',
+        code: `── File ──────────────────────────────────────────
+Read          Read any file's contents
+Write         Create or overwrite a file
+Edit          Precise find-and-replace in a file
+MultiEdit     Multiple edits to one file in one call
+
+── Search ────────────────────────────────────────
+Glob          Find files by pattern (e.g. **/*.ts)
+Grep          Search file contents with regex
+LS            List directory contents
+
+── Execution ─────────────────────────────────────
+Bash          Run any shell command
+Task          Spawn a specialized subagent
+
+── Web ───────────────────────────────────────────
+WebFetch      Fetch a URL, extract content as text
+WebSearch     Search the web, return ranked results
+
+── Notebooks ─────────────────────────────────────
+NotebookRead  Read Jupyter notebook cells
+NotebookEdit  Insert, replace, or delete cells
+
+── UI (interactive sessions only) ───────────────
+AskUserQuestion   Prompt the user for a choice
+TodoWrite         Create/update a task checklist
+EnterPlanMode     Switch to plan-before-code mode
+ExitPlanMode      Signal plan is ready for approval`,
+      },
+      {
+        filename: '.claude/settings.json',
+        label: 'Controlling tool access via permissions',
+        lang: 'json',
+        code: `{
+  "permissions": {
+    "allow": [
+      "Read(**)",
+      "Glob(**)",
+      "Grep(**)",
+      "Bash(git *)",
+      "Bash(npm test)",
+      "Bash(npm run lint)",
+      "Write(src/**)",
+      "Edit(src/**)"
+    ],
+    "deny": [
+      "Bash(rm -rf *)",
+      "Bash(curl *)",
+      "WebFetch(*)",
+      "Bash(git push *)"
+    ]
+  }
+}`,
+      },
+      {
+        filename: '.claude/agents/code-reviewer.md',
+        label: 'Agents declare their tool subset',
+        lang: 'markdown',
+        code: `---
+name: code-reviewer
+description: Reviews code for quality and security.
+tools: Read, Grep, Glob
+# ^ Only these three tools — no Bash, no Write.
+#   Keeps the agent read-only and safe.
+model: claude-sonnet-4-6
+---
+
+You are a senior code reviewer ...`,
+      },
+    ],
+  },
+];
+
+const edges = [
+  { from: 'claude-code', to: 'agent',        label: 'delegates to' },
+  { from: 'claude-code', to: 'plugin',       label: 'extended by' },
+  { from: 'claude-code', to: 'settings',     label: 'configured by' },
+  { from: 'claude-code', to: 'headless',     label: 'run as' },
+  { from: 'claude-code', to: 'mcp',          label: 'calls tools via' },
+  { from: 'agent',       to: 'subagent',     label: 'spawns' },
+  { from: 'agent',       to: 'skill',        label: 'uses' },
+  { from: 'agent',       to: 'mcp',          label: 'calls tools via' },
+  { from: 'plugin',      to: 'command',      label: 'bundles' },
+  { from: 'plugin',      to: 'skill',        label: 'bundles' },
+  { from: 'plugin',      to: 'hook',         label: 'bundles' },
+  { from: 'plugin',      to: 'mcp',          label: 'bundles' },
+  { from: 'plugin',      to: 'output-style', label: 'bundles' },
+  { from: 'plugin',      to: 'agent',        label: 'bundles' },
+  { from: 'marketplace', to: 'plugin',       label: 'distributes' },
+  { from: 'settings',    to: 'marketplace',  label: 'registers' },
+  { from: 'settings',    to: 'hook',         label: 'defines' },
+  { from: 'settings',    to: 'plugin',       label: 'auto-installs' },
+  { from: 'claude-code', to: 'tools',        label: 'built into' },
+  { from: 'mcp',         to: 'tools',        label: 'extends' },
+  { from: 'agent',       to: 'tools',        label: 'configures access to' },
+  { from: 'settings',    to: 'tools',        label: 'permissions govern' },
+];
+
+// ═══════════════════════════════════════════════════════════════
+// CANVAS SETUP
+// ═══════════════════════════════════════════════════════════════
+
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+let W, H;
+
+function resize() {
+  const wrap = document.getElementById('canvas-wrap');
+  W = canvas.width = wrap.offsetWidth * devicePixelRatio;
+  H = canvas.height = wrap.offsetHeight * devicePixelRatio;
+  canvas.style.width = wrap.offsetWidth + 'px';
+  canvas.style.height = wrap.offsetHeight + 'px';
+  ctx.scale(devicePixelRatio, devicePixelRatio);
+}
+
+function getW() { return canvas.width / devicePixelRatio; }
+function getH() { return canvas.height / devicePixelRatio; }
+
+resize();
+
+// ═══════════════════════════════════════════════════════════════
+// INITIAL LAYOUT
+// ═══════════════════════════════════════════════════════════════
+
+function placeNodes() {
+  const cx = getW() / 2, cy = getH() / 2;
+  const pos = {
+    'claude-code':  [0,    0],
+    'agent':        [-185, -85],
+    'subagent':     [-310, -200],
+    'headless':     [165,  -185],
+    'plugin':       [205,  95],
+    'command':      [345,  195],
+    'skill':        [-75,  215],
+    'hook':         [285,  -55],
+    'output-style': [395,  65],
+    'marketplace':  [75,   -250],
+    'settings':     [-225, 165],
+    'mcp':          [125,  290],
+    'tools':        [-60,  175],
+  };
+  nodes.forEach(n => {
+    const p = pos[n.id];
+    n.x  = cx + (p ? p[0] : (Math.random() - .5) * 400);
+    n.y  = cy + (p ? p[1] : (Math.random() - .5) * 400);
+    n.vx = 0; n.vy = 0;
+  });
+}
+placeNodes();
+
+window.addEventListener('resize', () => {
+  ctx.resetTransform();
+  resize();
+  placeNodes();
+});
+
+// ═══════════════════════════════════════════════════════════════
+// PHYSICS
+// ═══════════════════════════════════════════════════════════════
+
+function tick() {
+  const cw = getW(), ch = getH();
+
+  // Repulsion between all pairs
+  for (let i = 0; i < nodes.length; i++) {
+    for (let j = i + 1; j < nodes.length; j++) {
+      const a = nodes[i], b = nodes[j];
+      const dx = b.x - a.x, dy = b.y - a.y;
+      const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+      const minD = (a.r + b.r) * 3.0;
+      if (dist < minD) {
+        const f = (minD - dist) / dist * 0.1;
+        if (!a.dragging) { a.vx -= dx * f; a.vy -= dy * f; }
+        if (!b.dragging) { b.vx += dx * f; b.vy += dy * f; }
+      }
+    }
+  }
+
+  // Spring along edges
+  edges.forEach(e => {
+    const a = nodes.find(n => n.id === e.from);
+    const b = nodes.find(n => n.id === e.to);
+    if (!a || !b) return;
+    const dx = b.x - a.x, dy = b.y - a.y;
+    const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+    const target = (a.r + b.r) * 2.8 + 30;
+    const f = (dist - target) / dist * 0.035;
+    if (!a.dragging) { a.vx += dx * f; a.vy += dy * f; }
+    if (!b.dragging) { b.vx -= dx * f; b.vy -= dy * f; }
+  });
+
+  // Gravity to center + damping + bounds
+  nodes.forEach(n => {
+    if (n.dragging) return;
+    n.vx += (cw / 2 - n.x) * 0.0015;
+    n.vy += (ch / 2 - n.y) * 0.0015;
+    n.vx *= 0.84; n.vy *= 0.84;
+    n.x += n.vx; n.y += n.vy;
+    n.x = Math.max(n.r + 8, Math.min(cw - n.r - 8, n.x));
+    n.y = Math.max(n.r + 8, Math.min(ch - n.r - 8, n.y));
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DRAW
+// ═══════════════════════════════════════════════════════════════
+
+let hoveredNode = null, selectedNode = null;
+let pulseT = 0;
+
+function isConnected(ref, node) {
+  return edges.some(e =>
+    (e.from === ref.id && e.to === node.id) ||
+    (e.to   === ref.id && e.from === node.id) ||
+    node.id === ref.id
+  );
+}
+
+function drawBgGrid() {
+  ctx.save();
+  ctx.strokeStyle = 'rgba(212,168,83,0.05)';
+  ctx.lineWidth = 1;
+  const step = 32;
+  const cw = getW(), ch = getH();
+  for (let x = step; x < cw; x += step) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, ch); ctx.stroke();
+  }
+  for (let y = step; y < ch; y += step) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(cw, y); ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawEdge(a, b, alpha, color, lineWidth) {
+  const dx = b.x - a.x, dy = b.y - a.y;
+  const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+  const ux = dx / dist, uy = dy / dist;
+
+  // Slight perpendicular curve
+  const mx = (a.x + b.x) / 2;
+  const my = (a.y + b.y) / 2;
+  const offset = dist * 0.08;
+  const cpx = mx - uy * offset;
+  const cpy = my + ux * offset;
+
+  // Clip to circle edges
+  const sx = a.x + ux * (a.r + 2);
+  const sy = a.y + uy * (a.r + 2);
+  const ex = b.x - ux * (b.r + 7);
+  const ey = b.y - uy * (b.r + 7);
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = lineWidth;
+  ctx.beginPath();
+  ctx.moveTo(sx, sy);
+  ctx.quadraticCurveTo(cpx, cpy, ex, ey);
+  ctx.stroke();
+
+  // Arrow head
+  const angle = Math.atan2(ey - cpy, ex - cpx);
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(ex, ey);
+  ctx.lineTo(ex - 8 * Math.cos(angle - 0.4), ey - 8 * Math.sin(angle - 0.4));
+  ctx.lineTo(ex - 8 * Math.cos(angle + 0.4), ey - 8 * Math.sin(angle + 0.4));
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+function draw() {
+  const cw = getW(), ch = getH();
+  ctx.clearRect(0, 0, cw, ch);
+  pulseT += 0.018;
+
+  drawBgGrid();
+
+  const activeRef = selectedNode || hoveredNode;
+
+  // ── Edges ──────────────────────────────────────────────
+  edges.forEach(e => {
+    const a = nodes.find(n => n.id === e.from);
+    const b = nodes.find(n => n.id === e.to);
+    if (!a || !b) return;
+    const active = activeRef
+      ? (activeRef.id === a.id || activeRef.id === b.id)
+      : false;
+    const dim = activeRef && !active;
+
+    if (dim) {
+      drawEdge(a, b, 0.04, '#8b949e', 1);
+    } else if (active) {
+      // Use the source node's color for active edges
+      const edgeColor = COLORS[a.cat];
+      drawEdge(a, b, 0.55, edgeColor, 1.5);
+    } else {
+      drawEdge(a, b, 0.1, 'rgba(212,168,83,0.6)', 1);
+    }
+  });
+
+  // ── Nodes ──────────────────────────────────────────────
+  nodes.forEach(n => {
+    const color = COLORS[n.cat];
+    const isSelected = selectedNode && selectedNode.id === n.id;
+    const isHovered  = !selectedNode && hoveredNode && hoveredNode.id === n.id;
+    const connected  = activeRef ? isConnected(activeRef, n) : false;
+    const dim        = activeRef && !connected;
+
+    ctx.globalAlpha = dim ? 0.18 : 1;
+
+    // Pulse ring on central node
+    if (n.id === 'claude-code' && !dim) {
+      const pr = n.r + 12 + 10 * Math.sin(pulseT);
+      const pulse = ctx.createRadialGradient(n.x, n.y, n.r, n.x, n.y, pr + 6);
+      pulse.addColorStop(0, color + '30');
+      pulse.addColorStop(1, 'transparent');
+      ctx.fillStyle = pulse;
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, pr + 6, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Glow halo
+    if ((isSelected || isHovered) && !dim) {
+      ctx.save();
+      ctx.shadowBlur = 24;
+      ctx.shadowColor = color + '88';
+      const grd = ctx.createRadialGradient(n.x, n.y, n.r * 0.5, n.x, n.y, n.r * 2.4);
+      grd.addColorStop(0, color + '28');
+      grd.addColorStop(1, 'transparent');
+      ctx.fillStyle = grd;
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.r * 2.4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // Circle fill
+    ctx.beginPath();
+    ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+    ctx.fillStyle = isSelected ? color + 'ee'
+                  : isHovered  ? color + 'cc'
+                  : connected && activeRef ? color + '33'
+                  : color + '16';
+    ctx.fill();
+
+    // Circle stroke
+    ctx.save();
+    if (isSelected) {
+      ctx.shadowBlur = 12;
+      ctx.shadowColor = color;
+    }
+    ctx.strokeStyle = color + (isSelected ? 'ff' : isHovered ? 'dd' : connected && activeRef ? 'cc' : '80');
+    ctx.lineWidth = isSelected ? 2.5 : isHovered ? 2 : 1.5;
+    ctx.beginPath();
+    ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+
+    // Label
+    const lines = n.label.split('\n');
+    const fs = Math.max(9, n.r * 0.34);
+    ctx.font = `${isSelected || isHovered ? 500 : 400} ${fs}px "JetBrains Mono", monospace`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = isSelected ? '#000'
+                  : dim        ? '#333b4a'
+                  : isHovered  ? '#f0ead8'
+                  : '#c8bfab';
+    const lh = fs * 1.3;
+    lines.forEach((line, i) => {
+      ctx.fillText(line, n.x, n.y + (i - (lines.length - 1) / 2) * lh);
+    });
+
+    ctx.globalAlpha = 1;
+  });
+}
+
+function loop() { tick(); draw(); requestAnimationFrame(loop); }
+
+// Wait for fonts before starting
+document.fonts.ready.then(() => loop());
+
+// ═══════════════════════════════════════════════════════════════
+// PANEL
+// ═══════════════════════════════════════════════════════════════
+
+const panel    = document.getElementById('panel');
+const pCat     = document.getElementById('p-cat');
+const pTitle   = document.getElementById('p-title');
+const pBadges  = document.getElementById('p-badges');
+const pDesc    = document.getElementById('p-desc');
+const pDoclink = document.getElementById('p-doclink');
+const pExamples= document.getElementById('p-examples');
+const pRelated = document.getElementById('p-related');
+
+function langFromFilename(filename) {
+  if (/\.json$/.test(filename)) return 'json';
+  if (/\.md$/.test(filename))   return 'markdown';
+  if (/\.sh$|shell/.test(filename)) return 'bash';
+  if (/\.ya?ml$/.test(filename)) return 'yaml';
+  if (/\.js$/.test(filename))   return 'javascript';
+  if (/\.ts$/.test(filename))   return 'typescript';
+  if (/\.py$/.test(filename))   return 'python';
+  return 'plaintext';
+}
+
+function openPanel(node) {
+  selectedNode = node;
+
+  const color = COLORS[node.cat];
+
+  // Category label
+  pCat.textContent = CAT_LABELS[node.cat];
+  pCat.style.color = color;
+
+  // Title
+  pTitle.textContent = node.label.replace('\n', ' ');
+
+  // Badges
+  pBadges.innerHTML = '';
+  const ic = INITIATED[node.initiated];
+  if (ic) {
+    const b1 = document.createElement('span');
+    b1.className = `badge ${ic.cls}`;
+    b1.title = ic.tip;
+    b1.textContent = ic.label;
+    pBadges.appendChild(b1);
+  }
+  const b2 = document.createElement('span');
+  b2.className = 'badge badge-cat';
+  b2.style.cssText = `border-color:${color}55;color:${color};background:${color}11`;
+  b2.textContent = CAT_LABELS[node.cat];
+  pBadges.appendChild(b2);
+
+  // Description
+  pDesc.textContent = node.desc;
+
+  // Doc link
+  pDoclink.innerHTML = node.doc ? `
+    <a class="p-doc-link" href="${node.doc}" target="_blank" rel="noopener">
+      <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
+        <path d="M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z"/>
+      </svg>
+      ${node.docLabel || 'Official documentation'}
+    </a>` : '';
+
+  // Code examples
+  pExamples.innerHTML = '';
+  (node.examples || []).forEach((ex, idx) => {
+    const lang = ex.lang || langFromFilename(ex.filename);
+
+    const wrap = document.createElement('div');
+    wrap.className = 'code-block';
+
+    const head = document.createElement('div');
+    head.className = 'cb-head';
+    head.innerHTML = `
+      <div class="cb-label">
+        <svg width="11" height="11" viewBox="0 0 16 16" fill="${color}" style="flex-shrink:0;opacity:.7">
+          <path d="M2 1.75C2 .784 2.784 0 3.75 0h6.586c.464 0 .909.184 1.237.513l2.914 2.914c.329.328.513.773.513 1.237v9.586A1.75 1.75 0 0 1 13.25 16h-9.5A1.75 1.75 0 0 1 2 14.25Zm1.75-.25a.25.25 0 0 0-.25.25v12.5c0 .138.112.25.25.25h9.5a.25.25 0 0 0 .25-.25V6h-2.75A1.75 1.75 0 0 1 9 4.25V1.5Zm6.75.062V4.25c0 .138.112.25.25.25h2.688Z"/>
+        </svg>
+        <span class="cb-filename">${ex.filename}</span>
+        <span style="color:var(--border2)">·</span>
+        <span class="cb-sublabel">${ex.label}</span>
+      </div>
+      <span class="cb-chevron ${idx === 0 ? 'open' : ''}">▶</span>`;
+
+    const body = document.createElement('div');
+    body.className = `cb-body ${idx === 0 ? 'open' : ''}`;
+
+    const pre  = document.createElement('pre');
+    const code = document.createElement('code');
+    code.textContent = ex.code;
+    if (lang !== 'plaintext') code.className = `language-${lang}`;
+    pre.appendChild(code);
+    body.appendChild(pre);
+
+    // Syntax highlight
+    try { hljs.highlightElement(code); } catch (e) {}
+
+    head.addEventListener('click', () => {
+      const isOpen = body.classList.toggle('open');
+      head.querySelector('.cb-chevron').classList.toggle('open', isOpen);
+    });
+
+    wrap.appendChild(head);
+    wrap.appendChild(body);
+    pExamples.appendChild(wrap);
+  });
+
+  // Related concepts
+  const related = new Set();
+  edges.forEach(e => {
+    if (e.from === node.id) related.add(e.to);
+    if (e.to   === node.id) related.add(e.from);
+  });
+  if (related.size) {
+    pRelated.innerHTML = '<div class="p-related-title">Related concepts</div><div class="chips"></div>';
+    const chipsEl = pRelated.querySelector('.chips');
+    related.forEach(id => {
+      const rel = nodes.find(n => n.id === id);
+      if (!rel) return;
+      const chip = document.createElement('span');
+      chip.className = 'chip';
+      chip.textContent = rel.label.replace('\n', ' ');
+      chip.addEventListener('click', () => openPanel(rel));
+      chipsEl.appendChild(chip);
+    });
+  } else {
+    pRelated.innerHTML = '';
+  }
+
+  panel.classList.add('open');
+}
+
+function closePanel() {
+  panel.classList.remove('open');
+  selectedNode = null;
+}
+
+document.getElementById('p-close').addEventListener('click', closePanel);
+
+// ═══════════════════════════════════════════════════════════════
+// INTERACTION
+// ═══════════════════════════════════════════════════════════════
+
+const tooltip  = document.getElementById('tooltip');
+const ttName   = document.getElementById('tt-name');
+const ttDesc   = document.getElementById('tt-desc');
+const ttCat    = document.getElementById('tt-cat');
+
+let dragging = null, dragOffX = 0, dragOffY = 0;
+let mouseDownNode = null, mouseDownTime = 0;
+
+function getNodeAt(mx, my) {
+  return nodes.find(n => Math.hypot(n.x - mx, n.y - my) < n.r) || null;
+}
+
+canvas.addEventListener('mousemove', e => {
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+
+  if (dragging) {
+    dragging.x = mx + dragOffX;
+    dragging.y = my + dragOffY;
+    return;
+  }
+
+  hoveredNode = getNodeAt(mx, my);
+
+  if (hoveredNode && hoveredNode !== selectedNode) {
+    canvas.style.cursor = 'pointer';
+    const color = COLORS[hoveredNode.cat];
+    ttName.textContent = hoveredNode.label.replace('\n', ' ');
+    ttName.style.color = color;
+    ttDesc.textContent = hoveredNode.short;
+    ttCat.textContent  = `${CAT_LABELS[hoveredNode.cat]} · click for examples →`;
+    tooltip.style.opacity = '1';
+    let tx = e.clientX + 16, ty = e.clientY - 10;
+    if (tx + 250 > window.innerWidth)  tx = e.clientX - 266;
+    if (ty + 100 > window.innerHeight) ty = e.clientY - 100;
+    tooltip.style.left = tx + 'px';
+    tooltip.style.top  = ty + 'px';
+  } else {
+    canvas.style.cursor = 'default';
+    tooltip.style.opacity = '0';
+  }
+});
+
+canvas.addEventListener('mousedown', e => {
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+  mouseDownNode = getNodeAt(mx, my);
+  mouseDownTime = Date.now();
+  if (mouseDownNode) {
+    dragOffX = mouseDownNode.x - mx;
+    dragOffY = mouseDownNode.y - my;
+    dragging = mouseDownNode;
+    dragging.dragging = true;
+    canvas.style.cursor = 'grabbing';
+  }
+});
+
+canvas.addEventListener('mouseup', e => {
+  const elapsed = Date.now() - mouseDownTime;
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+  const upNode = getNodeAt(mx, my);
+
+  if (dragging) {
+    dragging.dragging = false;
+    dragging.vx = 0; dragging.vy = 0;
+    dragging = null;
+  }
+
+  // Short press on same node = click
+  if (elapsed < 250 && upNode && upNode === mouseDownNode) {
+    tooltip.style.opacity = '0';
+    openPanel(upNode);
+  }
+
+  canvas.style.cursor = hoveredNode ? 'pointer' : 'default';
+  mouseDownNode = null;
+});
+
+canvas.addEventListener('click', e => {
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+  if (!getNodeAt(mx, my) && selectedNode) closePanel();
+});
+
+canvas.addEventListener('mouseleave', () => {
+  tooltip.style.opacity = '0';
+  if (dragging) { dragging.dragging = false; dragging = null; }
+  hoveredNode = null;
+});
+</script>
+</body>
+</html>

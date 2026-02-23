@@ -386,6 +386,41 @@ body.panel-resizing { cursor: ew-resize; user-select: none; }
   font-family: 'JetBrains Mono', monospace !important;
 }
 
+/* ── CREDITS ──────────────────────────────────────────────────── */
+.ref-credits {
+  border-top: 1px solid var(--border);
+  padding-top: 32px;
+  margin-top: 16px;
+}
+.ref-credits-label {
+  font-size: 9px; text-transform: uppercase; letter-spacing: .16em;
+  color: var(--muted); margin-bottom: 14px;
+}
+.ref-credits-row {
+  display: flex; align-items: flex-start; gap: 14px;
+  padding: 16px; border-radius: 8px;
+  background: var(--surf2); border: 1px solid var(--border);
+  margin-bottom: 10px;
+}
+.ref-credits-icon {
+  font-size: 20px; flex-shrink: 0; line-height: 1;
+  margin-top: 2px; opacity: .8;
+}
+.ref-credits-body { min-width: 0; }
+.ref-credits-name {
+  font-size: 12px; font-weight: 500; color: var(--text);
+  margin-bottom: 3px; letter-spacing: .02em;
+}
+.ref-credits-name a {
+  color: var(--accent); text-decoration: none;
+  border-bottom: 1px solid var(--accent-r);
+  transition: border-color .15s;
+}
+.ref-credits-name a:hover { border-color: var(--accent); }
+.ref-credits-desc {
+  font-size: 11px; color: var(--dim); line-height: 1.5; font-weight: 300;
+}
+
 /* Key points list */
 .ref-points { list-style: none; margin-bottom: 0; }
 .ref-points li {
@@ -808,6 +843,39 @@ best — a U-shaped memory curve.
           <span>Don't dump entire style guides or API docs — that's very expensive and reduces quality. Don't write vague rules like "don't make any mistakes". Don't <code>@</code>-include huge files unless necessary.</span>
         </li>
       </ul>
+    </div>
+
+    <!-- ── CREDITS ─────────────────────────────────────────────── -->
+    <div class="ref-credits">
+      <div class="ref-credits-label">Sources &amp; Credit</div>
+
+      <div class="ref-credits-row">
+        <div class="ref-credits-icon">▶</div>
+        <div class="ref-credits-body">
+          <div class="ref-credits-name">
+            <a href="https://www.youtube.com/watch?v=QoQBzR1NIqI" target="_blank" rel="noopener">
+              Claude Code Full Course (4 Hours) — Nick Saraev
+            </a>
+          </div>
+          <div class="ref-credits-desc">
+            The concepts, examples, and best practices throughout this site are drawn primarily from Nick Saraev's comprehensive 2026 course on building and selling with Claude Code.
+          </div>
+        </div>
+      </div>
+
+      <div class="ref-credits-row">
+        <div class="ref-credits-icon">◈</div>
+        <div class="ref-credits-body">
+          <div class="ref-credits-name">
+            <a href="https://docs.anthropic.com/en/docs/claude-code/overview" target="_blank" rel="noopener">
+              Claude Code Documentation — Anthropic
+            </a>
+          </div>
+          <div class="ref-credits-desc">
+            Official reference for all Claude Code features, settings, hooks, agents, and APIs.
+          </div>
+        </div>
+      </div>
     </div>
 
   </div>

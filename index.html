@@ -253,6 +253,15 @@ body.panel-resizing { cursor: ew-resize; user-select: none; }
 .leg-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
 .leg-label { font-size: 10px; color: var(--dim); }
 
+/* ── PRIMACY/RECENCY PULSE ────────────────────────────────────── */
+@keyframes pb-ring {
+  0%   { r: 6;  opacity: .55; }
+  60%  { r: 13; opacity: 0;   }
+  100% { r: 13; opacity: 0;   }
+}
+.pb-ring { animation: pb-ring 2.4s ease-out infinite; }
+.pb-ring-delay { animation: pb-ring 2.4s ease-out infinite; animation-delay: 1.2s; }
+
 /* ── HLJS overrides ───────────────────────────────────────────── */
 .hljs { background: #0d1117 !important; padding: 14px 16px !important; }
 
@@ -799,22 +808,66 @@ model: claude-opus-4-6   ← this agent always uses Opus
 
       <hr class="ref-divider">
 
-      <div class="ref-code-block">
-        <div class="ref-code-block-header">Primacy &amp; Recency bias</div>
-        <pre><code class="language-plaintext">Claude remembers information at the BEGINNING and END of its context
-best — a U-shaped memory curve.
+      <div class="loop-svg-wrap">
+        <svg class="loop-svg" viewBox="0 0 640 210" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="pb-arr" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5" markerHeight="5" orient="auto">
+              <path d="M0,0 L8,4 L0,8 Z" fill="#424955"/>
+            </marker>
+          </defs>
 
-  ▲ Remembered
-  │█                                              █
-  │█                                              █
-  │ █                                           █
-  │  █                                         █
-  │   █████████████████████████████████████████
-  └─────────────────────────────────────────────▶ Position in context
-     ↑ Start (primacy)                 End (recency) ↑
+          <!-- ── Axes ── -->
+          <line x1="72" y1="162" x2="72" y2="18" stroke="#2a3448" stroke-width="1.5" marker-end="url(#pb-arr)"/>
+          <line x1="72" y1="162" x2="624" y2="162" stroke="#2a3448" stroke-width="1.5" marker-end="url(#pb-arr)"/>
 
-→ Put your most critical guardrails at the TOP of CLAUDE.md.
-→ Less important context can go in the middle.</code></pre>
+          <!-- Y-axis label -->
+          <text transform="translate(16,100) rotate(-90)" text-anchor="middle"
+                font-size="9" fill="#424955" letter-spacing=".1em">REMEMBERED</text>
+
+          <!-- X-axis label -->
+          <text x="347" y="185" text-anchor="middle"
+                font-size="9" fill="#424955" letter-spacing=".1em">POSITION IN CONTEXT</text>
+
+          <!-- ── Curve fill ── -->
+          <path d="M 86,42 C 168,158 258,166 348,166 C 438,166 528,158 610,42 L 610,162 L 86,162 Z"
+                fill="rgba(212,168,83,0.06)"/>
+
+          <!-- ── Curve stroke ── -->
+          <path d="M 86,42 C 168,158 258,166 348,166 C 438,166 528,158 610,42"
+                stroke="#d4a853" stroke-width="1.8" fill="none" stroke-opacity="0.5"/>
+
+          <!-- ── X-axis ticks ── -->
+          <line x1="86"  y1="159" x2="86"  y2="165" stroke="#2a3448" stroke-width="1.5"/>
+          <line x1="610" y1="159" x2="610" y2="165" stroke="#2a3448" stroke-width="1.5"/>
+          <text x="86"  y="177" text-anchor="middle" font-size="9.5" fill="#424955">Start</text>
+          <text x="610" y="177" text-anchor="middle" font-size="9.5" fill="#424955">End</text>
+
+          <!-- ── Middle annotation ── -->
+          <line x1="348" y1="162" x2="348" y2="170" stroke="#2a3448" stroke-width="1" stroke-dasharray="3,2"/>
+          <text x="348" y="178" text-anchor="middle" font-size="9" fill="#424955" letter-spacing=".04em">least remembered</text>
+
+          <!-- ── Primacy dot + pulse + label ── -->
+          <circle class="pb-ring" cx="86" cy="42" r="6" fill="none" stroke="#d4a853" stroke-width="1.2"/>
+          <circle cx="86" cy="42" r="5" fill="#d4a853" opacity="0.9"/>
+          <!-- dashed line up to label -->
+          <line x1="86" y1="26" x2="86" y2="37" stroke="#d4a853" stroke-width="1" stroke-dasharray="2,2" opacity=".5"/>
+          <!-- label box -->
+          <rect x="22" y="10" width="90" height="22" rx="5" fill="#0e1220" stroke="#1b2235" stroke-width="1.5"/>
+          <text x="67" y="25" text-anchor="middle" font-size="10" fill="#d4a853" font-weight="500">Primacy bias</text>
+
+          <!-- ── Recency dot + pulse + label ── -->
+          <circle class="pb-ring-delay" cx="610" cy="42" r="6" fill="none" stroke="#d4a853" stroke-width="1.2"/>
+          <circle cx="610" cy="42" r="5" fill="#d4a853" opacity="0.9"/>
+          <!-- dashed line up to label -->
+          <line x1="610" y1="26" x2="610" y2="37" stroke="#d4a853" stroke-width="1" stroke-dasharray="2,2" opacity=".5"/>
+          <!-- label box -->
+          <rect x="528" y="10" width="90" height="22" rx="5" fill="#0e1220" stroke="#1b2235" stroke-width="1.5"/>
+          <text x="573" y="25" text-anchor="middle" font-size="10" fill="#d4a853" font-weight="500">Recency bias</text>
+
+          <!-- ── Guideline: put critical rules at top ── -->
+          <line x1="86" y1="42" x2="86" y2="60" stroke="#d4a853" stroke-width="1" stroke-dasharray="3,2" opacity=".3"/>
+          <text x="96" y="63" font-size="9" fill="#7d7566" letter-spacing=".03em">↑ put critical guardrails here</text>
+        </svg>
       </div>
 
       <ul class="ref-points">

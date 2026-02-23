@@ -300,8 +300,9 @@ body.panel-resizing { cursor: ew-resize; user-select: none; }
 
 /* ── LEGEND ───────────────────────────────────────────────────── */
 #legend {
-  position: fixed; bottom: 20px; left: 20px; z-index: 10;
-  background: rgba(14,18,32,.88); border: 1px solid var(--border);
+  position: fixed; top: 68px; left: 20px; z-index: 10;
+  background: color-mix(in srgb, var(--bg) 90%, transparent);
+  border: 1px solid var(--border);
   border-radius: 10px; padding: 13px 16px;
   backdrop-filter: blur(10px);
 }
@@ -2871,10 +2872,8 @@ const navBackBtn = document.getElementById('nav-back');
 function syncNavUI() {
   if (navPath.length === 0) {
     navBackBtn.style.display = 'none';
-    legend.style.display = '';
   } else {
     navBackBtn.style.display = 'block';
-    legend.style.display = 'none';
     navBackBtn.textContent = '← back';
   }
 }
@@ -2882,6 +2881,11 @@ function syncNavUI() {
 navBackBtn.addEventListener('click', () => goBack());
 
 function goDeeper(node) {
+  // If clicking an ancestor node (already drilled into), show its panel instead of re-drilling
+  if (navPath.includes(node.id)) {
+    openPanel(node);
+    return;
+  }
   const children = CHILDREN[node.id] || [];
   if (children.length > 0) {
     // Hide current level siblings
@@ -2924,14 +2928,11 @@ function goBack() {
   // Re-show siblings at the level we're returning to
   const parentId = navPath.length > 0 ? navPath[navPath.length - 1] : null;
   const siblings = parentId ? (CHILDREN[parentId] || []) : ['claude-code'];
-  const anchor = nodes.find(n => n.id === focusedId);
   siblings.forEach(id => {
     const n = nodes.find(n => n.id === id);
     if (!n || n.visible) return;
-    n.x  = (anchor?.x ?? getW()/2) + (Math.random() - .5) * 80;
-    n.y  = (anchor?.y ?? getH()/2) + (Math.random() - .5) * 80;
-    n.vx = (Math.random() - .5) * 2;
-    n.vy = (Math.random() - .5) * 2;
+    n.vx = 0;
+    n.vy = 0;
     n.visible = true;
   });
   syncNavUI();
@@ -3224,7 +3225,7 @@ function draw() {
     } else if (active) {
       drawEdge(a, b, 0.55 * ea, COLORS[a.cat], 1.5, dashed);
     } else {
-      drawEdge(a, b, 0.1 * ea, 'rgba(212,168,83,0.6)', 1, dashed);
+      drawEdge(a, b, 0.35 * ea, 'rgba(212,168,83,0.6)', 1.2, dashed);
     }
   });
 
@@ -3578,7 +3579,7 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 
     if (btn.dataset.tab === 'graph') {
       canvasWrap.style.display = '';
-      legend.style.display = navPath.length === 0 ? '' : 'none';
+      legend.style.display = '';
       hint.style.display = '';
       refPanel.classList.remove('active');
     } else {

@@ -28,6 +28,36 @@
   --accent-r: rgba(212,168,83,.3);
 }
 
+/* ── LIGHT THEME ─────────────────────────────────────────────── */
+:root[data-theme="light"] {
+  --bg:       #f5f1e8;
+  --surf:     #fdfaf3;
+  --surf2:    #f0ece1;
+  --border:   #ddd5c2;
+  --border2:  #c9c0ab;
+  --text:     #1c170e;
+  --dim:      #5c5346;
+  --muted:    #9c9080;
+  --accent:   #a67218;
+  --accent-b: rgba(166,114,24,.12);
+  --accent-r: rgba(166,114,24,.32);
+}
+@media (prefers-color-scheme: light) {
+  :root[data-theme="system"] {
+    --bg:       #f5f1e8;
+    --surf:     #fdfaf3;
+    --surf2:    #f0ece1;
+    --border:   #ddd5c2;
+    --border2:  #c9c0ab;
+    --text:     #1c170e;
+    --dim:      #5c5346;
+    --muted:    #9c9080;
+    --accent:   #a67218;
+    --accent-b: rgba(166,114,24,.12);
+    --accent-r: rgba(166,114,24,.32);
+  }
+}
+
 html, body {
   width: 100%; height: 100%; overflow: hidden;
   background: var(--bg);
@@ -38,7 +68,7 @@ html, body {
 /* ── TOP BAR ─────────────────────────────────────────────────── */
 #topbar {
   position: fixed; top: 0; left: 0; right: 0; height: 48px;
-  background: rgba(9,12,18,.92);
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
   border-bottom: 1px solid var(--border);
   display: flex; align-items: center; padding: 0 24px; gap: 16px;
   z-index: 30; backdrop-filter: blur(12px);
@@ -54,9 +84,25 @@ html, body {
   color: var(--dim);
 }
 #topbar-hint {
-  margin-left: auto;
   font-size: 10px; color: var(--muted); letter-spacing: .05em;
 }
+
+/* ── THEME TOGGLE ─────────────────────────────────────────────── */
+.theme-toggle {
+  margin-left: auto;
+  display: flex; gap: 2px;
+  background: var(--surf2); border: 1px solid var(--border);
+  border-radius: 6px; padding: 3px;
+}
+.theme-btn {
+  background: none; border: none; cursor: pointer;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--muted); padding: 3px 9px; border-radius: 4px;
+  transition: background .15s, color .15s;
+}
+.theme-btn:hover { color: var(--dim); }
+.theme-btn.active { background: var(--accent-b); color: var(--accent); }
 
 /* ── CANVAS ───────────────────────────────────────────────────── */
 #canvas-wrap {
@@ -457,6 +503,11 @@ body.panel-resizing { cursor: ew-resize; user-select: none; }
     <button class="tab-btn" data-tab="ref">Reference</button>
   </div>
   <span id="topbar-hint">hover to preview · click to explore</span>
+  <div class="theme-toggle">
+    <button class="theme-btn" data-mode="light">Light</button>
+    <button class="theme-btn active" data-mode="dark">Dark</button>
+    <button class="theme-btn" data-mode="system">System</button>
+  </div>
 </div>
 
 <div id="canvas-wrap"><canvas id="c"></canvas></div>
@@ -502,6 +553,66 @@ body.panel-resizing { cursor: ew-resize; user-select: none; }
           <div class="rlc-desc">Subagents and parallel tasks</div>
         </a>
       </div>
+    </div>
+
+    <!-- ── CLI REFERENCE ────────────────────────────────────── -->
+    <div class="ref-section">
+      <div class="ref-section-label">Getting Started</div>
+      <h2>The <code style="font-family:inherit;font-size:inherit;background:var(--surf2);padding:2px 8px;border-radius:4px;border:1px solid var(--border)">claude</code> CLI</h2>
+      <p class="ref-lead">Everything in Claude Code flows through the <code>claude</code> command. Start an interactive session, run one-shot prompts in scripts, manage MCP servers, or control behavior with flags.</p>
+
+      <hr class="ref-divider">
+
+      <div class="ref-code-block">
+        <div class="ref-code-block-header">CLI flags</div>
+        <pre><code class="language-bash">claude                             # start interactive session
+claude -p "Fix the auth bug"       # headless: one-shot prompt
+claude --model claude-opus-4-6     # override model for this session
+claude --output-format json        # json | text | stream-json
+claude --allowedTools Bash,Read    # restrict tools for this run
+claude --max-turns 10              # cap the agentic loop iterations
+claude --verbose                   # show full tool call details
+
+# MCP subcommands
+claude mcp add --transport stdio github \
+  npx -y @modelcontextprotocol/server-github
+claude mcp list
+claude mcp remove github</code></pre>
+      </div>
+
+      <div class="ref-code-block">
+        <div class="ref-code-block-header">In-session slash commands</div>
+        <pre><code class="language-plaintext">/help           Show all available commands
+/compact        Summarize conversation history (saves tokens)
+/cost           Show token usage and estimated spend so far
+/model          Switch model mid-session
+/clear          Clear conversation and start fresh
+/plan           Enter plan mode — propose before building
+/init           Generate CLAUDE.md from your codebase
+/output-style   Switch output style for this session
+/memory         View or edit your CLAUDE.md files
+/review         Run code review (if defined as a command)
+/quit           Exit Claude Code</code></pre>
+      </div>
+
+      <ul class="ref-points">
+        <li>
+          <span class="rp-marker"><code>/compact</code></span>
+          <span>Run this when the context window is filling up. Summarizes the conversation in place — Claude keeps working with the key facts at a fraction of the token cost.</span>
+        </li>
+        <li>
+          <span class="rp-marker"><code>/plan</code></span>
+          <span>Asks Claude to enter plan mode: propose a full approach before writing any code. You approve or redirect, then implementation begins. Prevents expensive wrong-direction work.</span>
+        </li>
+        <li>
+          <span class="rp-marker"><code>/cost</code></span>
+          <span>Shows token usage and estimated API spend for the current session. Useful for keeping large agentic workflows within budget.</span>
+        </li>
+        <li>
+          <span class="rp-marker"><code>/init</code></span>
+          <span>Analyzes your project and writes a starter <code>CLAUDE.md</code>. Run once when setting up a new project — then customize the output. Understand the primacy/recency bias before editing.</span>
+        </li>
+      </ul>
     </div>
 
     <!-- ── TOKENS ───────────────────────────────────────────── -->
@@ -569,7 +680,7 @@ Use /compact to summarize history and reclaim space</code></pre>
 
       <ul class="ref-points">
         <li>
-          <span class="rp-marker">/compact</span>
+          <span class="rp-marker"><code>/compact</code></span>
           <span>Summarizes the conversation history in place, dramatically reducing token usage while preserving the key facts Claude needs to continue working.</span>
         </li>
         <li>
@@ -800,6 +911,86 @@ model: claude-opus-4-6   ← this agent always uses Opus
       </ul>
     </div>
 
+    <!-- ── SDLC BEST PRACTICES ──────────────────────────────── -->
+    <div class="ref-section">
+      <div class="ref-section-label">Best Practices</div>
+      <h2>Claude Code in Your SDLC</h2>
+      <p class="ref-lead">Claude Code fits naturally into every phase of the software development lifecycle — from planning a feature to shipping it. These patterns work well across solo projects and team codebases.</p>
+
+      <hr class="ref-divider">
+
+      <div class="ref-code-block">
+        <div class="ref-code-block-header">Recommended workflow per task</div>
+        <pre><code class="language-plaintext">1. Plan        /plan — propose approach, list files to touch
+               ↓ you approve or redirect
+2. Implement   Claude writes code in the agentic loop
+               ↓ PostToolUse hooks auto-run formatters
+3. Review      code-reviewer agent checks output
+               ↓ findings grouped by severity
+4. Test        qa agent or Bash("npm test") validates changes
+               ↓ failures surface before commit
+5. Commit      commit-helper skill writes the message
+               ↓ git hooks run lint, typecheck, test
+6. CI/CD       Headless: claude -p "..." in GitHub Actions</code></pre>
+      </div>
+
+      <div class="ref-code-block">
+        <div class="ref-code-block-header">.github/workflows/claude-review.yml</div>
+        <pre><code class="language-yaml">name: Claude Code Review
+on: [pull_request]
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+
+      - name: Review PR diff with Claude
+        run: |
+          git diff origin/main...HEAD | \
+          claude -p "Review this diff for bugs, security
+            issues, and missed edge cases. Output Markdown
+            grouped by severity: Critical / Warning / Info." \
+            --output-format text > review.md
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+      - name: Post review comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = require('fs').readFileSync('review.md','utf8');
+            github.rest.issues.createComment({
+              ...context.repo,
+              issue_number: context.issue.number, body
+            });</code></pre>
+      </div>
+
+      <ul class="ref-points">
+        <li>
+          <span class="rp-marker">Plan first</span>
+          <span>For any multi-file or architectural task, use <code>/plan</code> before implementation. Catching a wrong approach in the plan costs nothing; catching it after 10 tool calls costs tokens and time.</span>
+        </li>
+        <li>
+          <span class="rp-marker">Hook automation</span>
+          <span>Use <code>PostToolUse</code> hooks to run formatters (Prettier, gofmt, black) automatically on every file Claude writes. This keeps code clean without manual intervention or Claude forgetting to format.</span>
+        </li>
+        <li>
+          <span class="rp-marker">Parallel review</span>
+          <span>After implementation, spawn a <strong>code-reviewer</strong> and <strong>qa</strong> agent simultaneously via the Task tool. They run in parallel with isolated context — combined review + test in one round-trip.</span>
+        </li>
+        <li>
+          <span class="rp-marker">CI integration</span>
+          <span>Claude Code runs headless in GitHub Actions (or any CI). Pipe a PR diff through <code>claude -p</code> for automated review comments on every pull request — no human needed for first-pass review.</span>
+        </li>
+        <li>
+          <span class="rp-marker">Context hygiene</span>
+          <span>Run <code>/compact</code> at natural breakpoints — after finishing a feature, before starting the next. Keep <code>CLAUDE.md</code> under 500 lines. Use Grep/Glob for targeted reads instead of loading whole files.</span>
+        </li>
+      </ul>
+    </div>
+
     <!-- ── CLAUDE.md BEST PRACTICES ────────────────────────── -->
     <div class="ref-section">
       <div class="ref-section-label">Best Practices</div>
@@ -829,11 +1020,11 @@ model: claude-opus-4-6   ← this agent always uses Opus
                 font-size="9" fill="#424955" letter-spacing=".1em">POSITION IN CONTEXT</text>
 
           <!-- ── Curve fill ── -->
-          <path d="M 86,42 C 168,158 258,166 348,166 C 438,166 528,158 610,42 L 610,162 L 86,162 Z"
+          <path d="M 86,42 C 168,150 258,155 348,155 C 438,155 528,150 610,42 L 610,162 L 86,162 Z"
                 fill="rgba(212,168,83,0.06)"/>
 
           <!-- ── Curve stroke ── -->
-          <path d="M 86,42 C 168,158 258,166 348,166 C 438,166 528,158 610,42"
+          <path d="M 86,42 C 168,150 258,155 348,155 C 438,155 528,150 610,42"
                 stroke="#d4a853" stroke-width="1.8" fill="none" stroke-opacity="0.5"/>
 
           <!-- ── X-axis ticks ── -->
@@ -843,7 +1034,7 @@ model: claude-opus-4-6   ← this agent always uses Opus
           <text x="610" y="177" text-anchor="middle" font-size="9.5" fill="#424955">End</text>
 
           <!-- ── Middle annotation ── -->
-          <line x1="348" y1="162" x2="348" y2="170" stroke="#2a3448" stroke-width="1" stroke-dasharray="3,2"/>
+          <line x1="348" y1="155" x2="348" y2="162" stroke="#2a3448" stroke-width="1" stroke-dasharray="3,2"/>
           <text x="348" y="178" text-anchor="middle" font-size="9" fill="#424955" letter-spacing=".04em">least remembered</text>
 
           <!-- ── Primacy dot + pulse + label ── -->
@@ -872,7 +1063,7 @@ model: claude-opus-4-6   ← this agent always uses Opus
 
       <ul class="ref-points">
         <li>
-          <span class="rp-marker">Run /init</span>
+          <span class="rp-marker">Run <code>/init</code></span>
           <span>The <code>/init</code> command analyzes your codebase and writes a starter CLAUDE.md with project context. Great starting point before customizing.</span>
         </li>
         <li>
@@ -1708,6 +1899,66 @@ You are a senior code reviewer ...`,
     ],
   },
   {
+    id: 'plan-mode', label: 'Plan\nMode', cat: 'core', r: 22,
+    initiated: 'user',
+    short: 'Ask Claude to plan before it builds — prevents costly wrong-direction work.',
+    desc: 'Plan Mode is a first-class workflow in Claude Code: Claude proposes a full approach before touching any files. The built-in EnterPlanMode and ExitPlanMode tools make this explicit — you approve the plan, then implementation begins. Especially important for multi-file changes, architectural decisions, or any task with multiple valid approaches.',
+    doc: 'https://docs.anthropic.com/en/docs/claude-code/how-claude-thinks',
+    docLabel: 'How Claude thinks',
+    examples: [
+      {
+        filename: 'Invoking plan mode',
+        label: 'How to trigger planning before building',
+        lang: 'plaintext',
+        code: `# Explicit ask (works always)
+"Before writing any code, plan your approach."
+"Think step by step about how you'd implement this."
+"What files would you need to change? Plan first."
+
+# Built-in slash command
+/plan
+
+# In CLAUDE.md — enforce planning on complex tasks
+## Workflow
+For tasks touching more than 2 files, always use
+EnterPlanMode and list every file you will modify
+before writing a single line of code.`,
+      },
+      {
+        filename: 'Why plan first?',
+        label: 'The cost of skipping the plan',
+        lang: 'plaintext',
+        code: `Without a plan:
+  Claude starts writing → realizes it needs to
+  refactor → context fills with wrong attempts →
+  you interrupt → start over. Expensive.
+
+With a plan:
+  Claude maps out files, data flow, edge cases →
+  you spot the flaw before any code is written →
+  redirect costs nothing.
+
+Rule of thumb:
+  If you'd ask a senior engineer to whiteboard
+  it first, ask Claude to plan first too.`,
+      },
+      {
+        filename: '.claude/CLAUDE.md',
+        label: 'Enforce plan-first in your CLAUDE.md',
+        lang: 'markdown',
+        code: `## Workflow
+
+For any task touching more than 2 files:
+1. Use \`EnterPlanMode\` — write out the full approach
+2. List every file you will create or modify
+3. Note any trade-offs or alternative approaches
+4. Wait for approval before writing any code
+
+For simple, single-file changes: proceed directly.`,
+      },
+    ],
+  },
+  {
     id: 'claude-md', label: 'CLAUDE.md', cat: 'config', r: 26,
     initiated: 'user',
     short: 'A Markdown file Claude reads at session start — your persistent project instructions.',
@@ -1857,6 +2108,7 @@ const edges = [
   { from: 'agent',       to: 'frontmatter',  label: 'configured by' },
   { from: 'skill',       to: 'frontmatter',  label: 'configured by' },
   { from: 'command',     to: 'frontmatter',  label: 'configured by' },
+  { from: 'claude-code', to: 'plan-mode',    label: 'supports' },
   { from: 'claude-code', to: 'claude-md',    label: 'loads on startup' },
   { from: 'settings',    to: 'claude-md',    label: 'complements' },
   { from: 'agent',       to: 'claude-md',    label: 'memory field loads' },
@@ -1905,6 +2157,7 @@ function placeNodes() {
     'mcp':          [125,  290],
     'tools':        [-60,  175],
     'frontmatter':  [195,  280],
+    'plan-mode':    [80,   -180],
     'claude-md':    [-300, 85],
   };
   nodes.forEach(n => {
@@ -2524,6 +2777,29 @@ setInterval(() => {
   setLdActive(ldStep);
   ldStep = (ldStep + 1) % ldSteps.length;
 }, 1100);
+
+// ═══════════════════════════════════════════════════════════════
+// THEME
+// ═══════════════════════════════════════════════════════════════
+
+(function() {
+  const root = document.documentElement;
+  const saved = localStorage.getItem('cc-theme') || 'dark';
+  root.setAttribute('data-theme', saved);
+
+  // Sync active state on initial load
+  document.querySelectorAll('.theme-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.mode === saved);
+    btn.addEventListener('click', () => {
+      const mode = btn.dataset.mode;
+      root.setAttribute('data-theme', mode);
+      localStorage.setItem('cc-theme', mode);
+      document.querySelectorAll('.theme-btn').forEach(b =>
+        b.classList.toggle('active', b === btn)
+      );
+    });
+  });
+})();
 </script>
 </body>
 </html>

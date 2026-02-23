@@ -87,7 +87,8 @@ canvas { display: block; width: 100%; height: 100%; cursor: default; }
 /* ── SIDE PANEL ───────────────────────────────────────────────── */
 #panel {
   position: fixed; top: 48px; right: 0; bottom: 0;
-  width: 440px; z-index: 20;
+  width: 440px; min-width: 300px; max-width: 80vw;
+  z-index: 20;
   background: var(--surf);
   border-left: 1px solid var(--border);
   display: flex; flex-direction: column;
@@ -96,6 +97,23 @@ canvas { display: block; width: 100%; height: 100%; cursor: default; }
   box-shadow: -20px 0 60px rgba(0,0,0,.4);
 }
 #panel.open { transform: translateX(0); }
+#panel.resizing { transition: none; user-select: none; }
+
+/* Resize handle */
+#panel-resize {
+  position: absolute; left: 0; top: 0; bottom: 0; width: 5px;
+  cursor: ew-resize; z-index: 1;
+}
+#panel-resize::after {
+  content: '';
+  position: absolute; left: 2px; top: 50%; transform: translateY(-50%);
+  width: 1px; height: 40px;
+  background: var(--border2);
+  border-radius: 1px;
+  transition: background .15s, height .15s;
+}
+#panel-resize:hover::after { background: var(--accent-r); height: 56px; }
+body.panel-resizing { cursor: ew-resize; user-select: none; }
 
 /* Panel header */
 .p-head {
@@ -238,6 +256,31 @@ canvas { display: block; width: 100%; height: 100%; cursor: default; }
 /* ── HLJS overrides ───────────────────────────────────────────── */
 .hljs { background: #0d1117 !important; padding: 14px 16px !important; }
 
+/* ── LOOP DIAGRAM ─────────────────────────────────────────────── */
+.loop-svg-wrap {
+  background: var(--surf); border: 1px solid var(--border);
+  border-radius: 10px; padding: 28px 20px 20px;
+  margin-bottom: 28px; overflow: hidden;
+}
+.loop-svg { width: 100%; height: auto; display: block; }
+.loop-svg text { font-family: 'JetBrains Mono', monospace; }
+
+/* ── LINK CARDS ───────────────────────────────────────────────── */
+.ref-links-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 10px;
+}
+.ref-link-card {
+  display: block; padding: 14px 16px;
+  background: var(--surf2); border: 1px solid var(--border);
+  border-radius: 8px; text-decoration: none;
+  transition: border-color .15s, background .15s;
+}
+.ref-link-card:hover { border-color: var(--accent-r); background: var(--accent-b); }
+.rlc-title { font-size: 12px; font-weight: 500; color: var(--accent); margin-bottom: 4px; letter-spacing: .02em; }
+.rlc-desc  { font-size: 11px; color: var(--dim); line-height: 1.5; font-weight: 300; }
+
 /* ── TABS ─────────────────────────────────────────────────────── */
 .tab-group {
   display: flex; gap: 4px; margin-left: 20px;
@@ -322,7 +365,21 @@ canvas { display: block; width: 100%; height: 100%; cursor: default; }
   border-bottom: 1px solid var(--border);
   font-size: 10.5px; color: var(--text); font-weight: 500;
   letter-spacing: .02em;
+  display: flex; align-items: center; justify-content: space-between;
 }
+
+/* ── COPY BUTTON ──────────────────────────────────────────────── */
+.copy-btn {
+  background: none; border: 1px solid transparent;
+  cursor: pointer; border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--muted); padding: 2px 7px; flex-shrink: 0;
+  transition: color .15s, border-color .15s, background .15s;
+  line-height: 1.6;
+}
+.copy-btn:hover { color: var(--dim); border-color: var(--border2); background: var(--surf); }
+.copy-btn.copied { color: #5ea878; border-color: #5ea87845; background: #5ea87810; }
 .ref-code-block pre {
   margin: 0 !important; border-radius: 0 !important; border: none !important;
   font-size: 12px !important; line-height: 1.7 !important;
@@ -362,6 +419,46 @@ canvas { display: block; width: 100%; height: 100%; cursor: default; }
 
 <div id="ref-panel">
   <div class="ref-container">
+
+    <!-- ── GETTING STARTED ──────────────────────────────────── -->
+    <div class="ref-section">
+      <div class="ref-section-label">Getting Started</div>
+      <h2>Installation</h2>
+
+      <hr class="ref-divider">
+
+      <div class="ref-code-block">
+        <div class="ref-code-block-header">macOS</div>
+        <pre><code class="language-bash">curl -fsSL https://claude.ai/install.sh | bash</code></pre>
+      </div>
+
+      <div class="ref-links-grid">
+        <a href="https://docs.anthropic.com/en/docs/claude-code/overview" target="_blank" rel="noopener" class="ref-link-card">
+          <div class="rlc-title">Overview ↗</div>
+          <div class="rlc-desc">What Claude Code is and how it works</div>
+        </a>
+        <a href="https://docs.anthropic.com/en/docs/claude-code/getting-started" target="_blank" rel="noopener" class="ref-link-card">
+          <div class="rlc-title">Getting Started ↗</div>
+          <div class="rlc-desc">Install, configure, run your first session</div>
+        </a>
+        <a href="https://docs.anthropic.com/en/docs/claude-code/cli-reference" target="_blank" rel="noopener" class="ref-link-card">
+          <div class="rlc-title">CLI Reference ↗</div>
+          <div class="rlc-desc">All flags, commands, and options</div>
+        </a>
+        <a href="https://docs.anthropic.com/en/docs/claude-code/settings" target="_blank" rel="noopener" class="ref-link-card">
+          <div class="rlc-title">Settings ↗</div>
+          <div class="rlc-desc">Full configuration reference</div>
+        </a>
+        <a href="https://docs.anthropic.com/en/docs/claude-code/hooks" target="_blank" rel="noopener" class="ref-link-card">
+          <div class="rlc-title">Hooks ↗</div>
+          <div class="rlc-desc">Lifecycle event automation</div>
+        </a>
+        <a href="https://docs.anthropic.com/en/docs/claude-code/sub-agents" target="_blank" rel="noopener" class="ref-link-card">
+          <div class="rlc-title">Agents ↗</div>
+          <div class="rlc-desc">Subagents and parallel tasks</div>
+        </a>
+      </div>
+    </div>
 
     <!-- ── TOKENS ───────────────────────────────────────────── -->
     <div class="ref-section">
@@ -454,24 +551,79 @@ Use /compact to summarize history and reclaim space</code></pre>
 
       <hr class="ref-divider">
 
+      <div class="loop-svg-wrap">
+        <svg id="loop-diagram" class="loop-svg" viewBox="0 0 620 190" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arr" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5" markerHeight="5" orient="auto">
+              <path d="M0,0 L8,4 L0,8 Z" fill="#424955"/>
+            </marker>
+            <marker id="arr-accent" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5" markerHeight="5" orient="auto">
+              <path d="M0,0 L8,4 L0,8 Z" fill="#d4a853"/>
+            </marker>
+          </defs>
+
+          <!-- ── Static connector lines ── -->
+          <!-- You → Claude -->
+          <line x1="94" y1="84" x2="143" y2="84" stroke="#2a3448" stroke-width="1.5" marker-end="url(#arr)"/>
+          <!-- Claude → Tool -->
+          <line x1="283" y1="84" x2="332" y2="84" stroke="#2a3448" stroke-width="1.5" marker-end="url(#arr)"/>
+          <!-- Tool → Result -->
+          <line x1="448" y1="84" x2="497" y2="84" stroke="#2a3448" stroke-width="1.5" marker-end="url(#arr)"/>
+          <!-- Result loops back to Claude (dashed curve below) -->
+          <path id="loop-path" d="M557,102 C557,155 283,155 220,102"
+                stroke="#2a3448" stroke-width="1.5" fill="none"
+                stroke-dasharray="5,3" marker-end="url(#arr)"/>
+          <!-- "repeat" label -->
+          <text x="390" y="172" text-anchor="middle" font-size="9.5" fill="#424955" letter-spacing=".06em">REPEAT UNTIL DONE</text>
+
+          <!-- Claude "when done" exit — downward dotted -->
+          <line x1="213" y1="103" x2="213" y2="138" stroke="#2a3448" stroke-width="1" stroke-dasharray="3,2"/>
+          <text x="222" y="155" font-size="9.5" fill="#424955" letter-spacing=".04em">↓ response when done</text>
+
+          <!-- ── Nodes ── -->
+          <!-- You -->
+          <g id="ld-you">
+            <rect x="8" y="66" width="86" height="36" rx="7" fill="#0e1220" stroke="#1b2235" stroke-width="1.5"/>
+            <text x="51" y="87" text-anchor="middle" font-size="11" fill="#7d7566" font-weight="400">You</text>
+          </g>
+
+          <!-- Claude thinks -->
+          <g id="ld-claude">
+            <rect x="145" y="66" width="138" height="36" rx="7" fill="#0e1220" stroke="#1b2235" stroke-width="1.5"/>
+            <text x="214" y="87" text-anchor="middle" font-size="11" fill="#7d7566" font-weight="400">Claude thinks</text>
+          </g>
+
+          <!-- Tool call -->
+          <g id="ld-tool">
+            <rect x="334" y="66" width="114" height="36" rx="7" fill="#0e1220" stroke="#1b2235" stroke-width="1.5"/>
+            <text x="391" y="87" text-anchor="middle" font-size="11" fill="#7d7566" font-weight="400">Tool call</text>
+          </g>
+
+          <!-- Result -->
+          <g id="ld-result">
+            <rect x="499" y="66" width="112" height="36" rx="7" fill="#0e1220" stroke="#1b2235" stroke-width="1.5"/>
+            <text x="555" y="87" text-anchor="middle" font-size="11" fill="#7d7566" font-weight="400">Result</text>
+          </g>
+        </svg>
+      </div>
+
       <div class="ref-code-block">
-        <div class="ref-code-block-header">A typical loop for "Fix the auth bug"</div>
+        <div class="ref-code-block-header">A real loop — "Fix the auth bug"</div>
         <pre><code class="language-plaintext">You: "Fix the auth bug in login.ts"
 
   Claude thinks → calls Read("src/auth/login.ts")
-  ← reads file contents
+  ← file contents
 
-  Claude thinks → calls Grep("pattern: 'await'", "src/auth/")
-  ← finds missing awaits
+  Claude thinks → calls Grep("'await'", "src/auth/")
+  ← finds missing awaits on line 47
 
-  Claude thinks → calls Edit("src/auth/login.ts", fix)
-  ← confirms edit applied
+  Claude thinks → calls Edit("src/auth/login.ts", ...)
+  ← edit applied
 
   Claude thinks → calls Bash("npm test -- auth")
   ← tests pass
 
-Claude: "Fixed. The issue was a missing await on the
-         verifyToken call at line 47. Tests pass."</code></pre>
+Claude: "Fixed. Missing await on verifyToken at line 47."</code></pre>
       </div>
 
       <ul class="ref-points">
@@ -604,6 +756,60 @@ model: claude-opus-4-6   ← this agent always uses Opus
       </ul>
     </div>
 
+    <!-- ── CLAUDE.md BEST PRACTICES ────────────────────────── -->
+    <div class="ref-section">
+      <div class="ref-section-label">Best Practices</div>
+      <h2>Writing Great CLAUDE.md Files</h2>
+      <p class="ref-lead">CLAUDE.md is loaded fresh into Claude's context at the start of every session. It's the single highest-leverage thing you can configure. Writing it well dramatically improves quality and cuts token costs — writing it poorly does the opposite.</p>
+
+      <hr class="ref-divider">
+
+      <div class="ref-code-block">
+        <div class="ref-code-block-header">Primacy &amp; Recency bias</div>
+        <pre><code class="language-plaintext">Claude remembers information at the BEGINNING and END of its context
+best — a U-shaped memory curve.
+
+  ▲ Remembered
+  │█                                              █
+  │█                                              █
+  │ █                                           █
+  │  █                                         █
+  │   █████████████████████████████████████████
+  └─────────────────────────────────────────────▶ Position in context
+     ↑ Start (primacy)                 End (recency) ↑
+
+→ Put your most critical guardrails at the TOP of CLAUDE.md.
+→ Less important context can go in the middle.</code></pre>
+      </div>
+
+      <ul class="ref-points">
+        <li>
+          <span class="rp-marker">Run /init</span>
+          <span>The <code>/init</code> command analyzes your codebase and writes a starter CLAUDE.md with project context. Great starting point before customizing.</span>
+        </li>
+        <li>
+          <span class="rp-marker">Size</span>
+          <span>Keep CLAUDE.md between <strong>200–500 lines</strong>. It's loaded every session, so long files are expensive. If it grows larger, split into <code>.claude/rules/</code> files and <code>@</code>-include them.</span>
+        </li>
+        <li>
+          <span class="rp-marker">Format</span>
+          <span>Use <strong>bullet points and short headings</strong> rather than prose. Claude scans this file — structured content is processed more reliably than paragraphs.</span>
+        </li>
+        <li>
+          <span class="rp-marker">Guardrails</span>
+          <span>Put your most important rules <strong>at the top</strong> — things like "never delete files without confirmation" or "always run tests before marking tasks done". Primacy bias means these stick.</span>
+        </li>
+        <li>
+          <span class="rp-marker">Living doc</span>
+          <span>When Claude makes the same mistake twice, <strong>add a rule</strong>. Version-control your CLAUDE.md and prune it periodically — outdated rules add noise and cost tokens.</span>
+        </li>
+        <li>
+          <span class="rp-marker">Avoid</span>
+          <span>Don't dump entire style guides or API docs — that's very expensive and reduces quality. Don't write vague rules like "don't make any mistakes". Don't <code>@</code>-include huge files unless necessary.</span>
+        </li>
+      </ul>
+    </div>
+
   </div>
 </div>
 
@@ -614,6 +820,7 @@ model: claude-opus-4-6   ← this agent always uses Opus
 </div>
 
 <div id="panel">
+  <div id="panel-resize"></div>
   <div class="p-head">
     <div class="p-cat" id="p-cat"></div>
     <div class="p-title" id="p-title"></div>
@@ -690,11 +897,17 @@ const nodes = [
       },
       {
         filename: 'CLAUDE.md',
-        label: 'Project context Claude always reads',
+        label: 'Best-practice project context file',
         lang: 'markdown',
         code: `# My Project
 
-Always read \`.claude/rules/code-style.md\` before writing code.
+<!-- Run /init to auto-generate a starting CLAUDE.md from your codebase -->
+<!-- Keep this file 200–500 lines. Split into rules/ if it grows larger. -->
+<!-- Put critical guardrails at the TOP — Claude has primacy bias. -->
+
+## Critical rules
+- NEVER delete files without confirmation
+- NEVER commit secrets or credentials
 
 ## Stack
 - TypeScript, React, Node 20
@@ -704,7 +917,9 @@ Always read \`.claude/rules/code-style.md\` before writing code.
 ## Conventions
 - API routes live in \`src/routes/\`
 - Use named exports, never default exports
-- Run \`npm test\` before marking any task done`,
+- Run \`npm test\` before marking any task done
+
+@.claude/rules/code-style.md`,
       },
     ],
   },
@@ -712,21 +927,22 @@ Always read \`.claude/rules/code-style.md\` before writing code.
     id: 'agent', label: 'Agent', cat: 'core', r: 30,
     initiated: 'both',
     short: 'A pre-configured AI personality for a specific task domain.',
-    desc: 'Agents are pre-configured AI personalities with custom system prompts, tool access, and their own context window. Claude Code can delegate to them automatically or you can invoke them with "Use the X agent to…".',
+    desc: 'Agents are pre-configured AI personalities — each with its own system prompt, tool access, model choice, and isolated context window. Claude Code can invoke them automatically based on context, or you can ask: "Use the code-reviewer agent." You can also wire agents into teams where a lead agent manages parallel subagents.',
     doc: 'https://docs.anthropic.com/en/docs/claude-code/sub-agents',
     docLabel: 'Subagents docs',
     examples: [
       {
         filename: '.claude/agents/code-reviewer.md',
-        label: 'Example: Code Reviewer agent',
+        label: 'Example: Code Reviewer agent (all fields)',
         lang: 'markdown',
         code: `---
 name: code-reviewer
-description: Reviews code for best practices, security, and
-  performance. Invoked automatically after code changes or
-  when asked to review.
+description: Reviews code for correctness, security, and style.
+  Invoked automatically after code changes or when asked to review.
 tools: Read, Grep, Glob
 model: claude-sonnet-4-6
+maxTurns: 20
+memory: project
 ---
 
 You are a senior code reviewer. For every review:
@@ -740,56 +956,83 @@ You are a senior code reviewer. For every review:
 Group findings by severity: Critical / Warning / Info.`,
       },
       {
-        filename: '.claude/agents/debugger.md',
-        label: 'Example: Debugger agent',
+        filename: '.claude/agents/researcher.md',
+        label: 'Example: Researcher agent',
         lang: 'markdown',
         code: `---
-name: debugger
-description: Diagnoses bugs and runtime errors. Use when
-  something is broken and you need root-cause analysis.
-tools: Read, Bash, Grep, Glob
+name: researcher
+description: Researches technical topics, APIs, and libraries.
+  Use when you need in-depth information before writing code.
+tools: WebSearch, WebFetch, Read
 model: claude-opus-4-6
+maxTurns: 30
 ---
 
-You are an expert debugger. When given a bug:
+You are a technical researcher. When given a topic:
 
-1. Reproduce the error with minimal steps
-2. Trace the execution path to find root cause
-3. Propose a fix with explanation of why it works
-4. Add a regression test to prevent recurrence
+1. Search for official documentation first
+2. Find real-world usage examples
+3. Note any known gotchas or breaking changes
+4. Return a concise Markdown summary with sources
 
-Never guess — gather evidence first.`,
+Cite all sources. Never fabricate information.`,
       },
     ],
   },
   {
     id: 'subagent', label: 'Subagent\n(Task)', cat: 'core', r: 24,
     initiated: 'claude',
-    short: 'A child agent Claude autonomously spawns to handle a subtask.',
-    desc: 'When Claude Code uses the Task tool, it spins up a subagent with its own isolated context window. Subagents work independently and return results to the parent — preventing context pollution and enabling parallel work.',
+    short: 'A child agent Claude autonomously spawns to handle a subtask in parallel.',
+    desc: 'When Claude uses the Task tool, it spawns a subagent with its own isolated context window and loop. Subagents work concurrently and report back to the parent — enabling parallel workstreams. Note: spawning subagents is expensive (~7× more tokens than a linear approach), so it\'s most valuable for tasks that genuinely benefit from parallelism or isolation. The three most useful subagents: Code Reviewer, Researcher, and QA.',
     doc: 'https://docs.anthropic.com/en/docs/claude-code/sub-agents',
     docLabel: 'Subagents docs',
     examples: [
       {
-        filename: '.claude/agents/data-analyst.md',
-        label: 'Example agent Claude auto-delegates to',
+        filename: 'Parallelization pattern',
+        label: 'Running 3 subagents simultaneously',
+        lang: 'plaintext',
+        code: `# Claude spawns all three at once via Task tool:
+
+  ┌─ Subagent 1: Code Reviewer ─────────────────┐
+  │  tools: Read, Grep, Glob                    │
+  │  → returns: severity-grouped findings       │
+  └─────────────────────────────────────────────┘
+
+  ┌─ Subagent 2: QA ────────────────────────────┐
+  │  tools: Bash, Read                          │
+  │  → returns: test run results & failures     │
+  └─────────────────────────────────────────────┘
+
+  ┌─ Subagent 3: Researcher ────────────────────┐
+  │  tools: WebSearch, WebFetch                 │
+  │  → returns: relevant docs & examples        │
+  └─────────────────────────────────────────────┘
+
+Parent agent aggregates all results and responds.
+Cost: ~7× more tokens than sequential — use wisely.`,
+      },
+      {
+        filename: '.claude/agents/qa.md',
+        label: 'Example: QA subagent',
         lang: 'markdown',
         code: `---
-name: data-analyst
-description: Analyzes CSV and JSON datasets, produces
-  summaries and charts. Invoked automatically when working
-  with data files or asked to analyze tabular data.
-tools: Read, Bash, Glob
+name: qa
+description: Runs tests, checks for regressions, and validates
+  that changes work as expected. Use after code changes.
+tools: Bash, Read, Glob
 model: claude-sonnet-4-6
+maxTurns: 25
 ---
 
-You are a data analyst. When given a dataset:
+You are a QA engineer. For each task:
 
-1. Inspect structure and data types first
-2. Identify missing values and outliers
-3. Compute summary statistics
-4. Generate a Markdown summary with key findings
-5. Suggest follow-up analyses if useful`,
+1. Run the full test suite: \`npm test\`
+2. Run linting: \`npm run lint\`
+3. Check for type errors: \`npm run typecheck\`
+4. Report any failures with file and line references
+5. Suggest fixes for each failure
+
+Never mark a task done if tests are failing.`,
       },
     ],
   },
@@ -1343,6 +1586,128 @@ You are a senior code reviewer ...`,
       },
     ],
   },
+  {
+    id: 'claude-md', label: 'CLAUDE.md', cat: 'config', r: 26,
+    initiated: 'user',
+    short: 'A Markdown file Claude reads at session start — your persistent project instructions.',
+    desc: 'CLAUDE.md is loaded fresh into Claude\'s context at the start of every session. It\'s how you give Claude persistent instructions without repeating yourself. Run /init to auto-generate one from your codebase. Keep it 200–500 lines; put critical guardrails at the top (Claude has primacy bias). Split into .claude/rules/ files if it grows too large.',
+    doc: 'https://docs.anthropic.com/en/docs/claude-code/memory',
+    docLabel: 'Memory & CLAUDE.md docs',
+    examples: [
+      {
+        filename: 'CLAUDE.md',
+        label: 'Do\'s and Don\'ts for CLAUDE.md',
+        lang: 'markdown',
+        code: `# My Project
+
+<!-- ✅ DO: Run /init to generate a starter file from your codebase  -->
+<!-- ✅ DO: Put most important guardrails at the TOP (primacy bias)  -->
+<!-- ✅ DO: Use bullet points & short headings — not prose paragraphs -->
+<!-- ✅ DO: Keep to 200–500 lines. Split into rules/ if larger.      -->
+<!-- ✅ DO: Version-control & review regularly (treat as living code) -->
+<!-- ✅ DO: Add a rule when Claude keeps making the same mistake      -->
+
+<!-- ❌ DON'T: Dump style guides / full API docs (very expensive)    -->
+<!-- ❌ DON'T: Write vague rules like "don't make any mistakes"      -->
+<!-- ❌ DON'T: @-include huge files unless absolutely necessary      -->
+
+## Critical guardrails
+- NEVER delete files without confirmation
+- NEVER commit secrets or credentials
+- Always run \`npm test\` before marking tasks done
+
+## Stack
+- TypeScript, React 18, Node 20
+- Postgres via Drizzle ORM, Vitest
+
+## Conventions
+- Named exports only — no default exports
+- API routes in \`src/routes/\`
+
+@.claude/rules/code-style.md`,
+      },
+      {
+        filename: 'CLAUDE.md hierarchy',
+        label: 'Three layers — enterprise → global → project',
+        lang: 'plaintext',
+        code: `CLAUDE.md is loaded from three layers (all merged):
+
+  1. Enterprise policy (managed by admin, always loaded)
+     e.g. company-wide security rules
+
+  2. Global personal  ~/.claude/CLAUDE.md
+     + ~/.claude/rules/*.md
+     Your instructions across ALL projects
+
+  3. Project local  .claude/CLAUDE.md
+     + .claude/rules/*.md
+     + .claude/MEMORY.md  ← auto-memory (first 200 lines)
+     Shared with team via git
+
+Splitting example:
+  .claude/
+  ├── CLAUDE.md             ← main file (short summary + @includes)
+  └── rules/
+      ├── code-style.md     ← @.claude/rules/code-style.md
+      └── frontend/
+          └── react.md      ← @.claude/rules/frontend/react.md`,
+      },
+    ],
+  },
+  {
+    id: 'frontmatter', label: 'Frontmatter', cat: 'extensibility', r: 20,
+    initiated: 'user',
+    short: 'YAML metadata between --- delimiters that configures agents, skills, and commands.',
+    desc: 'Frontmatter is the block of YAML between --- delimiters at the very top of a Markdown file. In Claude Code, it\'s how you configure agents, skills, and slash commands — declaring their name, description, which tools they can use, and which model to run on. Claude reads the description field to decide when to invoke a skill or agent automatically.',
+    doc: 'https://docs.anthropic.com/en/docs/claude-code/sub-agents',
+    docLabel: 'Agents & frontmatter docs',
+    examples: [
+      {
+        filename: 'Agent frontmatter',
+        label: 'All fields for .claude/agents/*.md',
+        lang: 'markdown',
+        code: `---
+name: code-reviewer
+description: >
+  Reviews code for correctness, security, and style.
+  Invoked automatically after edits or on request.
+tools: Read, Glob, Grep
+model: claude-sonnet-4-6
+maxTurns: 20          # max agentic loop iterations
+memory: project       # load project CLAUDE.md into context
+---
+
+System prompt for the agent goes here...`,
+      },
+      {
+        filename: 'Skill frontmatter',
+        label: 'All fields for .claude/skills/*/SKILL.md',
+        lang: 'markdown',
+        code: `---
+name: commit-helper
+description: >
+  Generates conventional commit messages from staged diffs.
+  Use when writing or reviewing a git commit.
+allowed-tools: Bash, Read
+---
+
+Skill instructions go here...`,
+      },
+      {
+        filename: 'Command frontmatter',
+        label: 'Fields for .claude/commands/*.md',
+        lang: 'markdown',
+        code: `---
+description: Run a full code review on staged changes
+---
+
+Slash command instructions go here...
+
+# $ARGUMENTS placeholder passes CLI args
+# e.g. /review src/auth.ts → $ARGUMENTS = "src/auth.ts"`,
+      },
+    ],
+  },
 ];
 
 const edges = [
@@ -1368,6 +1733,12 @@ const edges = [
   { from: 'mcp',         to: 'tools',        label: 'extends' },
   { from: 'agent',       to: 'tools',        label: 'configures access to' },
   { from: 'settings',    to: 'tools',        label: 'permissions govern' },
+  { from: 'agent',       to: 'frontmatter',  label: 'configured by' },
+  { from: 'skill',       to: 'frontmatter',  label: 'configured by' },
+  { from: 'command',     to: 'frontmatter',  label: 'configured by' },
+  { from: 'claude-code', to: 'claude-md',    label: 'loads on startup' },
+  { from: 'settings',    to: 'claude-md',    label: 'complements' },
+  { from: 'agent',       to: 'claude-md',    label: 'memory field loads' },
 ];
 
 // ═══════════════════════════════════════════════════════════════
@@ -1412,6 +1783,8 @@ function placeNodes() {
     'settings':     [-225, 165],
     'mcp':          [125,  290],
     'tools':        [-60,  175],
+    'frontmatter':  [195,  280],
+    'claude-md':    [-300, 85],
   };
   nodes.forEach(n => {
     const p = pos[n.id];
@@ -1752,8 +2125,9 @@ function openPanel(node) {
     pre.appendChild(code);
     body.appendChild(pre);
 
-    // Syntax highlight
+    // Syntax highlight + copy button
     try { hljs.highlightElement(code); } catch (e) {}
+    head.appendChild(makeCopyBtn(code, true));
 
     head.addEventListener('click', () => {
       const isOpen = body.classList.toggle('open');
@@ -1929,6 +2303,106 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     }
   });
 });
+
+// ═══════════════════════════════════════════════════════════════
+// PANEL RESIZE
+// ═══════════════════════════════════════════════════════════════
+
+(function () {
+  const handle = document.getElementById('panel-resize');
+  let startX, startW;
+
+  handle.addEventListener('mousedown', e => {
+    startX = e.clientX;
+    startW = panel.offsetWidth;
+    panel.classList.add('resizing');
+    document.body.classList.add('panel-resizing');
+    e.preventDefault();
+  });
+
+  document.addEventListener('mousemove', e => {
+    if (!panel.classList.contains('resizing')) return;
+    const delta = startX - e.clientX;
+    const newW  = Math.min(Math.max(startW + delta, 300), window.innerWidth * 0.80);
+    panel.style.width = newW + 'px';
+  });
+
+  document.addEventListener('mouseup', () => {
+    panel.classList.remove('resizing');
+    document.body.classList.remove('panel-resizing');
+  });
+})();
+
+// ═══════════════════════════════════════════════════════════════
+// COPY BUTTONS
+// ═══════════════════════════════════════════════════════════════
+
+function makeCopyBtn(codeEl, stopProp) {
+  const btn = document.createElement('button');
+  btn.className = 'copy-btn';
+  btn.textContent = 'copy';
+  btn.addEventListener('click', e => {
+    if (stopProp) e.stopPropagation();
+    const text = codeEl.innerText;
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = 'copied ✓';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'copy';
+        btn.classList.remove('copied');
+      }, 2000);
+    });
+  });
+  return btn;
+}
+
+// Reference panel — static blocks, wire up once
+document.querySelectorAll('.ref-code-block').forEach(block => {
+  const header = block.querySelector('.ref-code-block-header');
+  const code   = block.querySelector('pre code');
+  if (header && code) header.appendChild(makeCopyBtn(code, false));
+});
+
+// ═══════════════════════════════════════════════════════════════
+// LOOP DIAGRAM ANIMATION
+// ═══════════════════════════════════════════════════════════════
+
+const ldSteps = [
+  { id: 'ld-you',    color: '#5a8fc4' },
+  { id: 'ld-claude', color: '#d4a853' },
+  { id: 'ld-tool',   color: '#c46e5a' },
+  { id: 'ld-result', color: '#5ea878' },
+];
+
+function setLdActive(stepIdx) {
+  ldSteps.forEach(({ id, color }, i) => {
+    const g = document.getElementById(id);
+    if (!g) return;
+    const rect = g.querySelector('rect');
+    const text = g.querySelector('text');
+    if (i === stepIdx) {
+      rect.setAttribute('stroke', color);
+      rect.setAttribute('fill', color + '18');
+      text.setAttribute('fill', color);
+    } else {
+      rect.setAttribute('stroke', '#1b2235');
+      rect.setAttribute('fill', '#0e1220');
+      text.setAttribute('fill', '#7d7566');
+    }
+  });
+
+  // Also light up the loop arrow when going from result back to claude
+  const loopPath = document.getElementById('loop-path');
+  if (loopPath) {
+    loopPath.setAttribute('stroke', stepIdx === 3 ? '#5ea878' : '#2a3448');
+  }
+}
+
+let ldStep = 0;
+setInterval(() => {
+  setLdActive(ldStep);
+  ldStep = (ldStep + 1) % ldSteps.length;
+}, 1100);
 </script>
 </body>
 </html>

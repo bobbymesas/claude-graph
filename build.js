@@ -54,6 +54,7 @@ function parseMd(src, filename) {
       let codeLines   = [];
       let inFence     = false;
       let fence       = '';
+      let note        = '';
 
       for (let i = 1; i < lines.length; i++) {
         const ln = lines[i];
@@ -82,6 +83,12 @@ function parseMd(src, filename) {
 
         if (inFence) {
           codeLines.push(ln);
+          continue;
+        }
+
+        // After fence closes, look for optional NOTE line
+        if (!inFence && ln.startsWith('### NOTE:')) {
+          note = ln.replace(/^### NOTE:\s*/, '').trim();
         }
       }
 
@@ -90,12 +97,14 @@ function parseMd(src, filename) {
         codeLines.pop();
       }
 
-      examples.push({
+      const ex = {
         filename: filename_ex,
         label,
         lang,
         code: codeLines.join('\n'),
-      });
+      };
+      if (note) ex.note = note;
+      examples.push(ex);
     }
   }
 

@@ -35,6 +35,7 @@ MCP (Model Context Protocol) servers expose tools that Claude autonomously calls
   }
 }
 ```
+### NOTE: The `${GITHUB_TOKEN}` syntax injects an environment variable at runtime — never hardcode tokens in .mcp.json. The file is typically committed, so treat it like .env with secrets externalised.
 
 ### EXAMPLE: Manage MCP servers via CLI
 ### FILE: shell
@@ -54,3 +55,4 @@ claude mcp list
 # Remove a server
 claude mcp remove github
 ```
+### NOTE: Use `--transport http` for remote servers (URL endpoint) and `--transport stdio` for local npm packages. The CLI writes to .mcp.json automatically — you can also edit the file directly.

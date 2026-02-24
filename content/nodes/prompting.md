@@ -32,6 +32,7 @@ Use `/plan` before complex tasks — it forces Claude to propose before implemen
   Done when: plus-sign emails submit successfully and the error
   message shows for truly invalid emails.
 ```
+### NOTE: The specific prompt names the file, the symptom, a reproduction signal (network tab/400), a constraint (don't change X), and a success condition. Each of those cuts a whole correction loop.
 
 ### EXAMPLE: Start with intent, then refine
 ### FILE: terminal session
@@ -51,6 +52,7 @@ Use `/plan` before complex tasks — it forces Claude to propose before implemen
 # Step 4: approve and let it build
 > Looks good, go ahead
 ```
+### NOTE: `/plan` is the highest-leverage habit — it forces Claude to surface assumptions before writing a line of code. Redirect in Step 3 is cheap; redirecting after 200 lines of generated code is not.
 
 ### EXAMPLE: Give Claude what it can't see
 ### FILE: .claude/CLAUDE.md (excerpt)
@@ -70,3 +72,4 @@ Use `/plan` before complex tasks — it forces Claude to propose before implemen
 - Feature works, tests pass, no TypeScript errors
 - New code follows existing naming patterns in the same file
 ```
+### NOTE: This excerpt lives in CLAUDE.md so it applies to every session automatically. Architecture conventions prevent the most common mistakes; off-limits files prevent accidental breakage of frozen code.

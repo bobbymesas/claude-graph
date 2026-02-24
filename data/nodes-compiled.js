@@ -85,13 +85,15 @@ export const nodeContent = {
         "filename": "CLAUDE.md",
         "label": "Do's and Don'ts for CLAUDE.md",
         "lang": "markdown",
-        "code": "# My Project\n\n<!-- ✅ DO: Run /init to generate a starter file from your codebase  -->\n<!-- ✅ DO: Put most important guardrails at the TOP (primacy bias)  -->\n<!-- ✅ DO: Use bullet points & short headings — not prose paragraphs -->\n<!-- ✅ DO: Keep to 200–500 lines. Split into rules/ if larger.      -->\n<!-- ✅ DO: Version-control & review regularly (treat as living code) -->\n<!-- ✅ DO: Add a rule when Claude keeps making the same mistake      -->\n\n<!-- ❌ DON'T: Dump style guides / full API docs (very expensive)    -->\n<!-- ❌ DON'T: Write vague rules like \"don't make any mistakes\"      -->\n<!-- ❌ DON'T: @-include huge files unless absolutely necessary      -->\n\n## Critical guardrails\n- NEVER delete files without confirmation\n- NEVER commit secrets or credentials\n- Always run `npm test` before marking tasks done\n\n## Stack\n- TypeScript, React 18, Node 20\n- Postgres via Drizzle ORM, Vitest\n\n## Conventions\n- Named exports only — no default exports\n- API routes in `src/routes/`\n\n@.claude/rules/code-style.md"
+        "code": "# My Project\n\n<!-- ✅ DO: Run /init to generate a starter file from your codebase  -->\n<!-- ✅ DO: Put most important guardrails at the TOP (primacy bias)  -->\n<!-- ✅ DO: Use bullet points & short headings — not prose paragraphs -->\n<!-- ✅ DO: Keep to 200–500 lines. Split into rules/ if larger.      -->\n<!-- ✅ DO: Version-control & review regularly (treat as living code) -->\n<!-- ✅ DO: Add a rule when Claude keeps making the same mistake      -->\n\n<!-- ❌ DON'T: Dump style guides / full API docs (very expensive)    -->\n<!-- ❌ DON'T: Write vague rules like \"don't make any mistakes\"      -->\n<!-- ❌ DON'T: @-include huge files unless absolutely necessary      -->\n\n## Critical guardrails\n- NEVER delete files without confirmation\n- NEVER commit secrets or credentials\n- Always run `npm test` before marking tasks done\n\n## Stack\n- TypeScript, React 18, Node 20\n- Postgres via Drizzle ORM, Vitest\n\n## Conventions\n- Named exports only — no default exports\n- API routes in `src/routes/`\n\n@.claude/rules/code-style.md",
+        "note": "The Critical guardrails section goes at the top — Claude reads with primacy bias, so rules listed first carry more weight. Use @include to split large files rather than pasting everything inline."
       },
       {
         "filename": "CLAUDE.md hierarchy",
         "label": "Three layers — enterprise → global → project",
         "lang": "plaintext",
-        "code": "CLAUDE.md is loaded from three layers (all merged):\n\n  1. Enterprise policy (managed by admin, always loaded)\n     e.g. company-wide security rules\n\n  2. Global personal  ~/.claude/CLAUDE.md\n     + ~/.claude/rules/*.md\n     Your instructions across ALL projects\n\n  3. Project local  .claude/CLAUDE.md\n     + .claude/rules/*.md\n     + .claude/MEMORY.md  ← auto-memory (first 200 lines)\n     Shared with team via git\n\nSplitting example:\n  .claude/\n  ├── CLAUDE.md             ← main file (short summary + @includes)\n  └── rules/\n      ├── code-style.md     ← @.claude/rules/code-style.md\n      └── frontend/\n          └── react.md      ← @.claude/rules/frontend/react.md"
+        "code": "CLAUDE.md is loaded from three layers (all merged):\n\n  1. Enterprise policy (managed by admin, always loaded)\n     e.g. company-wide security rules\n\n  2. Global personal  ~/.claude/CLAUDE.md\n     + ~/.claude/rules/*.md\n     Your instructions across ALL projects\n\n  3. Project local  .claude/CLAUDE.md\n     + .claude/rules/*.md\n     + .claude/MEMORY.md  ← auto-memory (first 200 lines)\n     Shared with team via git\n\nSplitting example:\n  .claude/\n  ├── CLAUDE.md             ← main file (short summary + @includes)\n  └── rules/\n      ├── code-style.md     ← @.claude/rules/code-style.md\n      └── frontend/\n          └── react.md      ← @.claude/rules/frontend/react.md",
+        "note": "All three layers merge at runtime — enterprise → global → project. The project CLAUDE.md is shared via git with your team; the global ~/.claude/CLAUDE.md is personal and never committed."
       }
     ],
   },
@@ -321,19 +323,22 @@ export const nodeContent = {
         "filename": ".claude/settings.json",
         "label": "Format on write + validate prompts",
         "lang": "json",
-        "code": "{\n  \"hooks\": {\n    \"PostToolUse\": [\n      {\n        \"matcher\": \"Write|Edit\",\n        \"hooks\": [{\n          \"type\": \"command\",\n          \"command\": \"$CLAUDE_PROJECT_DIR/.claude/hooks/format-on-write.sh\",\n          \"timeout\": 30\n        }]\n      }\n    ],\n    \"UserPromptSubmit\": [\n      {\n        \"hooks\": [{\n          \"type\": \"command\",\n          \"command\": \"$CLAUDE_PROJECT_DIR/.claude/hooks/validate-prompt.sh\"\n        }]\n      }\n    ],\n    \"SessionStart\": [\n      {\n        \"hooks\": [{\n          \"type\": \"command\",\n          \"command\": \"echo \\\"Session: $(date)\\\" >> ~/.claude/sessions.log\"\n        }]\n      }\n    ]\n  }\n}"
+        "code": "{\n  \"hooks\": {\n    \"PostToolUse\": [\n      {\n        \"matcher\": \"Write|Edit\",\n        \"hooks\": [{\n          \"type\": \"command\",\n          \"command\": \"$CLAUDE_PROJECT_DIR/.claude/hooks/format-on-write.sh\",\n          \"timeout\": 30\n        }]\n      }\n    ],\n    \"UserPromptSubmit\": [\n      {\n        \"hooks\": [{\n          \"type\": \"command\",\n          \"command\": \"$CLAUDE_PROJECT_DIR/.claude/hooks/validate-prompt.sh\"\n        }]\n      }\n    ],\n    \"SessionStart\": [\n      {\n        \"hooks\": [{\n          \"type\": \"command\",\n          \"command\": \"echo \\\"Session: $(date)\\\" >> ~/.claude/sessions.log\"\n        }]\n      }\n    ]\n  }\n}",
+        "note": "The matcher field is a regex — \"Write|Edit\" matches both tool names. Remove it to catch all PostToolUse events, or change the event key to \"PreToolUse\" to intercept before the action runs."
       },
       {
         "filename": ".claude/hooks/format-on-write.sh",
         "label": "format-on-write.sh — reads file path from stdin JSON",
         "lang": "bash",
-        "code": "#!/bin/bash\n# Hook input arrives as JSON on stdin — parse with jq\nINPUT=$(cat)\nFILE=$(echo \"$INPUT\" | jq -r '.tool_input.file_path // empty')\n\nif [ -n \"$FILE\" ] && command -v prettier &>/dev/null; then\n  prettier --write \"$FILE\" 2>/dev/null\nfi\nexit 0"
+        "code": "#!/bin/bash\n# Hook input arrives as JSON on stdin — parse with jq\nINPUT=$(cat)\nFILE=$(echo \"$INPUT\" | jq -r '.tool_input.file_path // empty')\n\nif [ -n \"$FILE\" ] && command -v prettier &>/dev/null; then\n  prettier --write \"$FILE\" 2>/dev/null\nfi\nexit 0",
+        "note": "Hook input always arrives on stdin as JSON — never via environment variables. Use jq to extract fields. Exit 0 to allow, exit 2 to block the action with an error message."
       },
       {
         "filename": ".claude/hooks/validate-prompt.sh",
         "label": "Example: Prompt validator script",
         "lang": "bash",
-        "code": "#!/bin/bash\n# Receives hook input via stdin as JSON\nINPUT=$(cat)\nPROMPT=$(echo \"$INPUT\" | jq -r '.prompt')\n\n# Block prompts containing raw secrets\nif echo \"$PROMPT\" | grep -qiE '(password|api_key|secret)\\s*[:=]\\s*\\S+'; then\n  echo \"Blocked: prompt appears to contain a secret\" >&2\n  exit 2\nfi\n\n# Inject current branch as context\nBRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)\necho \"Current git branch: $BRANCH\"\nexit 0"
+        "code": "#!/bin/bash\n# Receives hook input via stdin as JSON\nINPUT=$(cat)\nPROMPT=$(echo \"$INPUT\" | jq -r '.prompt')\n\n# Block prompts containing raw secrets\nif echo \"$PROMPT\" | grep -qiE '(password|api_key|secret)\\s*[:=]\\s*\\S+'; then\n  echo \"Blocked: prompt appears to contain a secret\" >&2\n  exit 2\nfi\n\n# Inject current branch as context\nBRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)\necho \"Current git branch: $BRANCH\"\nexit 0",
+        "note": "Printing to stdout injects text into Claude's context for the next turn. Exit 2 blocks the prompt with the stderr message shown to the user. Exit 0 with no output lets it through silently."
       }
     ],
   },
@@ -436,13 +441,15 @@ export const nodeContent = {
         "filename": ".mcp.json",
         "label": "GitHub + Postgres MCP servers",
         "lang": "json",
-        "code": "{\n  \"mcpServers\": {\n    \"github\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"@modelcontextprotocol/server-github\"],\n      \"env\": {\n        \"GITHUB_PERSONAL_ACCESS_TOKEN\": \"${GITHUB_TOKEN}\"\n      }\n    },\n    \"postgres\": {\n      \"command\": \"npx\",\n      \"args\": [\n        \"-y\",\n        \"@modelcontextprotocol/server-postgres\",\n        \"postgresql://localhost/mydb\"\n      ]\n    },\n    \"filesystem\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"@modelcontextprotocol/server-filesystem\", \".\"]\n    }\n  }\n}"
+        "code": "{\n  \"mcpServers\": {\n    \"github\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"@modelcontextprotocol/server-github\"],\n      \"env\": {\n        \"GITHUB_PERSONAL_ACCESS_TOKEN\": \"${GITHUB_TOKEN}\"\n      }\n    },\n    \"postgres\": {\n      \"command\": \"npx\",\n      \"args\": [\n        \"-y\",\n        \"@modelcontextprotocol/server-postgres\",\n        \"postgresql://localhost/mydb\"\n      ]\n    },\n    \"filesystem\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"@modelcontextprotocol/server-filesystem\", \".\"]\n    }\n  }\n}",
+        "note": "The `${GITHUB_TOKEN}` syntax injects an environment variable at runtime — never hardcode tokens in .mcp.json. The file is typically committed, so treat it like .env with secrets externalised."
       },
       {
         "filename": "shell",
         "label": "Manage MCP servers via CLI",
         "lang": "bash",
-        "code": "# Add a remote HTTP server\nclaude mcp add --transport http notion https://mcp.notion.com/mcp\n\n# Add a local stdio server\nclaude mcp add --transport stdio github \\\n  npx -y @modelcontextprotocol/server-github\n\n# List configured servers\nclaude mcp list\n\n# Remove a server\nclaude mcp remove github"
+        "code": "# Add a remote HTTP server\nclaude mcp add --transport http notion https://mcp.notion.com/mcp\n\n# Add a local stdio server\nclaude mcp add --transport stdio github \\\n  npx -y @modelcontextprotocol/server-github\n\n# List configured servers\nclaude mcp list\n\n# Remove a server\nclaude mcp remove github",
+        "note": "Use `--transport http` for remote servers (URL endpoint) and `--transport stdio` for local npm packages. The CLI writes to .mcp.json automatically — you can also edit the file directly."
       }
     ],
   },
@@ -598,19 +605,22 @@ export const nodeContent = {
         "filename": "terminal prompt",
         "label": "Vague vs. specific prompt",
         "lang": "plaintext",
-        "code": "❌ Vague\n> Fix the login\n\n✅ Specific\n> The login form in src/auth/Login.tsx submits but silently fails\n  when the email contains a plus sign. The API returns 400 (check\n  the network tab). Fix the email validation regex — don't change\n  the form layout or the submit handler's function signature.\n  Done when: plus-sign emails submit successfully and the error\n  message shows for truly invalid emails."
+        "code": "❌ Vague\n> Fix the login\n\n✅ Specific\n> The login form in src/auth/Login.tsx submits but silently fails\n  when the email contains a plus sign. The API returns 400 (check\n  the network tab). Fix the email validation regex — don't change\n  the form layout or the submit handler's function signature.\n  Done when: plus-sign emails submit successfully and the error\n  message shows for truly invalid emails.",
+        "note": "The specific prompt names the file, the symptom, a reproduction signal (network tab/400), a constraint (don't change X), and a success condition. Each of those cuts a whole correction loop."
       },
       {
         "filename": "terminal session",
         "label": "Start with intent, then refine",
         "lang": "plaintext",
-        "code": "# Step 1: state intent clearly\n> Add dark mode support to the settings page\n\n# Step 2: ask Claude to propose first\n> /plan\n\n# Step 3: redirect if the plan is wrong\n> Actually, use CSS custom properties stored in :root — not a\n  separate stylesheet. Keep all changes inside styles.css only.\n\n# Step 4: approve and let it build\n> Looks good, go ahead"
+        "code": "# Step 1: state intent clearly\n> Add dark mode support to the settings page\n\n# Step 2: ask Claude to propose first\n> /plan\n\n# Step 3: redirect if the plan is wrong\n> Actually, use CSS custom properties stored in :root — not a\n  separate stylesheet. Keep all changes inside styles.css only.\n\n# Step 4: approve and let it build\n> Looks good, go ahead",
+        "note": "`/plan` is the highest-leverage habit — it forces Claude to surface assumptions before writing a line of code. Redirect in Step 3 is cheap; redirecting after 200 lines of generated code is not."
       },
       {
         "filename": ".claude/CLAUDE.md (excerpt)",
         "label": "Give Claude what it can't see",
         "lang": "markdown",
-        "code": "## Architecture conventions\n- Server state via React Query — never add useState for API data\n- Auth via AuthContext — never bypass with direct API calls\n- All DB queries go through src/db/index.ts — no raw SQL in components\n\n## Off-limits files\n- src/legacy/ — frozen, do not modify\n- Any file under vendor/\n\n## Definition of done\n- Feature works, tests pass, no TypeScript errors\n- New code follows existing naming patterns in the same file"
+        "code": "## Architecture conventions\n- Server state via React Query — never add useState for API data\n- Auth via AuthContext — never bypass with direct API calls\n- All DB queries go through src/db/index.ts — no raw SQL in components\n\n## Off-limits files\n- src/legacy/ — frozen, do not modify\n- Any file under vendor/\n\n## Definition of done\n- Feature works, tests pass, no TypeScript errors\n- New code follows existing naming patterns in the same file",
+        "note": "This excerpt lives in CLAUDE.md so it applies to every session automatically. Architecture conventions prevent the most common mistakes; off-limits files prevent accidental breakage of frozen code."
       }
     ],
   },
@@ -690,7 +700,8 @@ export const nodeContent = {
         "filename": "Directory layout",
         "label": "Where skills and commands live",
         "lang": "plaintext",
-        "code": ".claude/\n├── skills/            ← Agent Skills (Claude-invoked)\n│   └── commit-helper/\n│       └── SKILL.md\n├── commands/          ← Slash commands (user-invoked)\n│   ├── review.md      ← /review\n│   └── deploy.md      ← /deploy\n└── output-styles/     ← Response format presets\n    └── concise.md     ← /output-style concise\n\n~/.claude/skills/      ← personal skills (all projects)\n~/.claude/commands/    ← personal commands"
+        "code": ".claude/\n├── skills/            ← Agent Skills (Claude-invoked)\n│   └── commit-helper/\n│       └── SKILL.md\n├── commands/          ← Slash commands (user-invoked)\n│   ├── review.md      ← /review\n│   └── deploy.md      ← /deploy\n└── output-styles/     ← Response format presets\n    └── concise.md     ← /output-style concise\n\n~/.claude/skills/      ← personal skills (all projects)\n~/.claude/commands/    ← personal commands",
+        "note": "Files in `.claude/commands/` become `/command-name` slash commands you type explicitly. Files in `.claude/skills/` are invoked automatically by Claude when context matches — you don't call them directly."
       }
     ],
   },

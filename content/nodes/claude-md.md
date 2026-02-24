@@ -39,6 +39,7 @@ CLAUDE.md is loaded fresh into Claude's context at the start of every session. I
 
 @.claude/rules/code-style.md
 ```
+### NOTE: The Critical guardrails section goes at the top — Claude reads with primacy bias, so rules listed first carry more weight. Use @include to split large files rather than pasting everything inline.
 
 ### EXAMPLE: Three layers — enterprise → global → project
 ### FILE: CLAUDE.md hierarchy
@@ -67,3 +68,4 @@ Splitting example:
       └── frontend/
           └── react.md      ← @.claude/rules/frontend/react.md
 ```
+### NOTE: All three layers merge at runtime — enterprise → global → project. The project CLAUDE.md is shared via git with your team; the global ~/.claude/CLAUDE.md is personal and never committed.

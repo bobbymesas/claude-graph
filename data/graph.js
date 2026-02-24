@@ -4,20 +4,17 @@
 // ═══════════════════════════════════════════════════════════════
 
 export const COLORS = {
-  core:          '#d4a853',   // gold  — Core Concepts
-  modes:         '#5a8fc4',   // blue  — Modes
-  config:        '#5ea878',   // green — Customization
-  integration:   '#9070c4',   // purple — Integrations
-  detail:        '#a09080',   // muted — L4 detail nodes
-  extensibility: '#c46e5a',   // kept for existing node refs
-  distribution:  '#5a8fc4',   // kept for existing node refs
+  core:          '#ecc050',   // brighter amber   — Core Concepts
+  modes:         '#74aee0',   // brighter blue    — Modes
+  config:        '#6ed494',   // brighter green   — Customization
+  integration:   '#b28ae0',   // brighter purple  — Integrations
+  detail:        '#b8a898',   // lighter muted    — L4 detail nodes
 };
 
 export const CAT_LABELS = {
   core: 'Core Concept', modes: 'Mode',
   config: 'Customization', integration: 'Integration',
   detail: 'Detail',
-  extensibility: 'Extensibility', distribution: 'Distribution',
 };
 
 export const INITIATED = {
@@ -40,8 +37,8 @@ export const nodes = [
 
   // ── L3 under modes ──────────────────────────────────────────
   { id: 'interactive-mode',     label: 'Interactive\nMode',     cat: 'modes',         r: 26, initiated: 'user'   },
-  { id: 'plan-mode',            label: 'Plan\nMode',            cat: 'core',          r: 22, initiated: 'user'   },
-  { id: 'headless',             label: 'Headless\nMode',        cat: 'core',          r: 22, initiated: 'user'   },
+  { id: 'plan-mode',            label: 'Plan\nMode',            cat: 'modes',         r: 22, initiated: 'user'   },
+  { id: 'headless',             label: 'Headless\nMode',        cat: 'modes',         r: 22, initiated: 'user'   },
   { id: 'agent-mode',           label: 'Agent\nMode',           cat: 'modes',         r: 26, initiated: 'both'   },
 
   // ── L4 under interactive-mode ───────────────────────────────
@@ -62,22 +59,22 @@ export const nodes = [
   { id: 'claude-md',            label: 'CLAUDE.md',             cat: 'config',        r: 26, initiated: 'user'   },
   { id: 'settings',             label: 'Settings',              cat: 'config',        r: 24, initiated: 'user'   },
   { id: 'skills',               label: 'Skills &\nCommands',    cat: 'config',        r: 26, initiated: 'both'   },
-  { id: 'hook',                 label: 'Hook',                  cat: 'extensibility', r: 23, initiated: 'system' },
+  { id: 'hook',                 label: 'Hook',                  cat: 'config',        r: 23, initiated: 'system' },
 
   // ── L3 under integrations ───────────────────────────────────
   { id: 'mcp',                  label: 'MCP\nServer',           cat: 'integration',   r: 27, initiated: 'claude' },
-  { id: 'plugin',               label: 'Plugin',                cat: 'extensibility', r: 34, initiated: 'user'   },
+  { id: 'plugin',               label: 'Plugin',                cat: 'integration',   r: 34, initiated: 'user'   },
   { id: 'ide-integrations',     label: 'IDE\nIntegrations',     cat: 'integration',   r: 26, initiated: 'user'   },
 
   // ── L4 under agent ──────────────────────────────────────────
   { id: 'subagent',             label: 'Subagent\n(Task)',       cat: 'core',          r: 24, initiated: 'claude' },
-  { id: 'frontmatter',          label: 'Frontmatter',           cat: 'extensibility', r: 20, initiated: 'user'   },
+  { id: 'frontmatter',          label: 'Frontmatter',           cat: 'detail',        r: 20, initiated: 'user'   },
 
   // ── L4 under skills ─────────────────────────────────────────
-  { id: 'skill',                label: 'Agent\nSkill',          cat: 'extensibility', r: 26, initiated: 'claude' },
-  { id: 'command',              label: 'Slash\nCommand',        cat: 'extensibility', r: 24, initiated: 'user'   },
-  { id: 'output-style',         label: 'Output\nStyle',         cat: 'extensibility', r: 20, initiated: 'user'   },
-  { id: 'marketplace',          label: 'Marketplace',           cat: 'distribution',  r: 28, initiated: 'user'   },
+  { id: 'skill',                label: 'Agent\nSkill',          cat: 'config',        r: 26, initiated: 'claude' },
+  { id: 'command',              label: 'Slash\nCommand',        cat: 'config',        r: 24, initiated: 'user'   },
+  { id: 'output-style',         label: 'Output\nStyle',         cat: 'config',        r: 20, initiated: 'user'   },
+  { id: 'marketplace',          label: 'Marketplace',           cat: 'integration',   r: 28, initiated: 'user'   },
 
   // ── L4 under tools ──────────────────────────────────────────
   { id: 'tool-bash',            label: 'Bash',                  cat: 'detail',        r: 20, initiated: 'claude' },

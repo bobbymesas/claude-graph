@@ -24,3 +24,4 @@ Claude Code's skill system includes Agent Skills (Claude invokes automatically b
 ~/.claude/skills/      ← personal skills (all projects)
 ~/.claude/commands/    ← personal commands
 ```
+### NOTE: Files in `.claude/commands/` become `/command-name` slash commands you type explicitly. Files in `.claude/skills/` are invoked automatically by Claude when context matches — you don't call them directly.

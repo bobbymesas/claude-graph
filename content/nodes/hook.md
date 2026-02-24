@@ -42,6 +42,7 @@ Hooks fire on events like PreToolUse, PostToolUse, Stop, SessionStart, and UserP
   }
 }
 ```
+### NOTE: The matcher field is a regex — "Write|Edit" matches both tool names. Remove it to catch all PostToolUse events, or change the event key to "PreToolUse" to intercept before the action runs.
 
 ### EXAMPLE: format-on-write.sh — reads file path from stdin JSON
 ### FILE: .claude/hooks/format-on-write.sh
@@ -58,6 +59,7 @@ if [ -n "$FILE" ] && command -v prettier &>/dev/null; then
 fi
 exit 0
 ```
+### NOTE: Hook input always arrives on stdin as JSON — never via environment variables. Use jq to extract fields. Exit 0 to allow, exit 2 to block the action with an error message.
 
 ### EXAMPLE: Example: Prompt validator script
 ### FILE: .claude/hooks/validate-prompt.sh
@@ -80,3 +82,4 @@ BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
 echo "Current git branch: $BRANCH"
 exit 0
 ```
+### NOTE: Printing to stdout injects text into Claude's context for the next turn. Exit 2 blocks the prompt with the stderr message shown to the user. Exit 0 with no output lets it through silently.

@@ -1131,6 +1131,7 @@ document.getElementById('show-all-btn').addEventListener('click', () => setShowA
 
 const canvasWrap = document.getElementById('canvas-wrap');
 const refPanel   = document.getElementById('ref-panel');
+const guidePanel = document.getElementById('guide-panel');
 const legend     = document.getElementById('legend');
 const hint       = document.getElementById('topbar-hint');
 
@@ -1144,13 +1145,15 @@ document.querySelectorAll('.tab-btn[data-tab]').forEach(btn => {
       legend.style.display = '';
       hint.style.display = '';
       refPanel.classList.remove('active');
+      guidePanel.classList.remove('active');
       nodeDrawer.classList.remove('drawer-hidden');
       syncNavUI();
-    } else {
+    } else if (btn.dataset.tab === 'ref') {
       canvasWrap.style.display = 'none';
       legend.style.display = 'none';
       hint.style.display = 'none';
       refPanel.classList.add('active');
+      guidePanel.classList.remove('active');
       nodeDrawer.classList.add('drawer-hidden');
       navBackBtn.style.display = 'none';
       closePanel();
@@ -1159,6 +1162,16 @@ document.querySelectorAll('.tab-btn[data-tab]').forEach(btn => {
       refPanel.querySelectorAll('pre code:not(.hljs)').forEach(el => {
         try { window.hljs.highlightElement(el); } catch(e) {}
       });
+    } else if (btn.dataset.tab === 'guide') {
+      canvasWrap.style.display = 'none';
+      legend.style.display = 'none';
+      hint.style.display = 'none';
+      refPanel.classList.remove('active');
+      guidePanel.classList.add('active');
+      nodeDrawer.classList.add('drawer-hidden');
+      navBackBtn.style.display = 'none';
+      closePanel();
+      tooltip.style.opacity = '0';
     }
   });
 });

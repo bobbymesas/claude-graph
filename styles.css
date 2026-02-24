@@ -631,3 +631,60 @@ body.panel-resizing { cursor: ew-resize; user-select: none; }
   pointer-events: none;
   z-index: 10;
 }
+
+/* ── Guide Panel ─────────────────────────────────────── */
+#guide-panel {
+  display: none;
+  position: fixed;
+  inset: 48px 0 0 0;
+  overflow-y: auto;
+  background: var(--bg);
+  z-index: 10;
+}
+#guide-panel.active { display: block; }
+
+.tip-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+  margin-top: 20px;
+}
+.tip-card {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  background: var(--surf2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+}
+.tip-icon {
+  font-size: 18px;
+  color: var(--accent);
+  min-width: 24px;
+  text-align: center;
+  margin-top: 2px;
+}
+.tip-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.tip-desc {
+  font-size: 12px;
+  color: var(--dim);
+  line-height: 1.55;
+}
+kbd {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  background: var(--surf2);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 1px 5px;
+  color: var(--text);
+}

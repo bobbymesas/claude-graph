@@ -22,6 +22,7 @@
   <div class="tab-group">
     <button class="tab-btn active" data-tab="graph">Concept Map</button>
     <button class="tab-btn" data-tab="ref">Reference</button>
+    <button class="tab-btn" data-tab="guide">Guide</button>
   </div>
   <button id="show-all-btn" class="tab-btn" title="Show all nodes at once">All nodes</button>
   <span id="topbar-hint">hover to preview · click to explore</span>
@@ -665,6 +666,68 @@ jobs:
       </div>
     </div>
 
+  </div>
+</div>
+
+<div id="guide-panel">
+  <div class="ref-container">
+    <div class="ref-section">
+      <div class="ref-section-label">Getting Started</div>
+      <h2>How to use this site</h2>
+      <p class="ref-lead">Claude Graph is an interactive map of Claude Code concepts. Each node is a feature or idea — explore by clicking, drilling in, and reading the detail panel.</p>
+      <hr class="ref-divider">
+      <div class="tip-grid">
+
+        <div class="tip-card">
+          <div class="tip-icon">⊙</div>
+          <div class="tip-body">
+            <div class="tip-title">Hover a node</div>
+            <div class="tip-desc">See a one-line summary in the tooltip.</div>
+          </div>
+        </div>
+
+        <div class="tip-card">
+          <div class="tip-icon">↵</div>
+          <div class="tip-body">
+            <div class="tip-title">Click a node</div>
+            <div class="tip-desc">Open the detail panel — full description, code examples, and a link to the official docs.</div>
+          </div>
+        </div>
+
+        <div class="tip-card">
+          <div class="tip-icon">⊕</div>
+          <div class="tip-body">
+            <div class="tip-title">Double-click a parent node</div>
+            <div class="tip-desc">Drill into its children. The graph zooms to show only that subtree.</div>
+          </div>
+        </div>
+
+        <div class="tip-card">
+          <div class="tip-icon">←</div>
+          <div class="tip-body">
+            <div class="tip-title">Back button</div>
+            <div class="tip-desc">Step back up the hierarchy to the previous level.</div>
+          </div>
+        </div>
+
+        <div class="tip-card">
+          <div class="tip-icon">≡</div>
+          <div class="tip-body">
+            <div class="tip-title">Browse all nodes</div>
+            <div class="tip-desc">Use the drawer at the bottom of the graph to search and jump directly to any concept.</div>
+          </div>
+        </div>
+
+        <div class="tip-card">
+          <div class="tip-icon">?</div>
+          <div class="tip-body">
+            <div class="tip-title">Keyboard shortcuts</div>
+            <div class="tip-desc">Press <kbd>?</kbd> on the graph to show arrow-key navigation, Enter, Esc, and A (expand all).</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
   </div>
 </div>
 

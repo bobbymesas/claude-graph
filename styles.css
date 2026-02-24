@@ -640,7 +640,12 @@ body.panel-resizing { cursor: ew-resize; user-select: none; }
   overflow-y: auto;
   background: var(--bg);
   z-index: 10;
+  padding: 52px 24px 72px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border2) transparent;
 }
+#guide-panel::-webkit-scrollbar { width: 5px; }
+#guide-panel::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
 #guide-panel.active { display: block; }
 
 .tip-grid {

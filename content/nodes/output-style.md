@@ -4,7 +4,7 @@ doc: https://code.claude.com/docs/en/output-styles
 docLabel: Output styles docs
 ---
 
-Output styles modify Claude's system prompt to change tone, verbosity, and format. Built-ins include Default and Explanatory. You can write custom styles as Markdown files and activate them with /output-style.
+Output styles modify Claude's system prompt to change tone, verbosity, and format. Built-ins include Default, Explanatory, and Learning. You can write custom styles as Markdown files and activate them with /output-style.
 
 ### EXAMPLE: Where output styles live
 ### FILE: File location

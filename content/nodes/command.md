@@ -4,7 +4,7 @@ doc: https://code.claude.com/docs/en/skills
 docLabel: Slash commands docs
 ---
 
-Slash commands are user-invoked — you type /command-name to run them. Defined as Markdown files, Claude reads the file and follows its instructions when you invoke the command. Project commands live in .claude/commands/.
+Slash commands are user-invoked — you type /command-name to run them. Defined as Markdown files, Claude reads the file and follows its instructions when you invoke the command. Project commands live in .claude/commands/. Note: slash commands have been merged into the skills system — .claude/commands/ still works but creating a skill is now the recommended approach.
 
 ### EXAMPLE: Where slash commands live
 ### FILE: File location

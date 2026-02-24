@@ -4,7 +4,7 @@ doc: https://code.claude.com/docs/en/mcp
 docLabel: MCP configuration docs
 ---
 
-MCP server configuration lives in .mcp.json at your repo root or in ~/.claude/mcp.json for global personal servers. Each entry specifies transport (stdio or HTTP/SSE), command/URL, arguments, and environment variables. Manage servers with the claude mcp add/list/remove CLI.
+MCP server configuration lives in .mcp.json at your repo root (project-scoped) or in ~/.claude.json for user-scoped servers available across all projects. Each entry specifies transport (stdio or HTTP/SSE), command/URL, arguments, and environment variables. Manage servers with the claude mcp add/list/remove CLI.
 
 ### EXAMPLE: Configuring MCP servers
 ### FILE: .mcp.json

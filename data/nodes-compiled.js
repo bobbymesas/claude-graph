@@ -3,7 +3,7 @@
 export const nodeContent = {
   "agent-mode": {
     short:    "Autonomous multi-agent execution — Claude delegates to parallel subagents.",
-    desc:     "Agent mode allows Claude to autonomously orchestrate multiple subagents for complex tasks. A lead agent breaks down work and spawns specialized child agents (code reviewer, QA, researcher) that run in parallel with isolated context windows, then aggregates their results.",
+    desc:     "Agent mode allows Claude to autonomously orchestrate multiple subagents for complex tasks. A lead agent breaks down work and spawns specialized child agents (code reviewer, QA, researcher) that run in parallel with isolated context windows, then aggregates their results. For coordinating agents across separate sessions, see Agent Teams.",
     doc:      "https://code.claude.com/docs/en/sub-agents",
     docLabel: "Subagents & agent mode docs",
     examples: [
@@ -112,8 +112,8 @@ export const nodeContent = {
     ],
   },
   "claudemd-inheritance": {
-    short:    "Multiple CLAUDE.md files merge: enterprise → global → project → local.",
-    desc:     "Claude Code merges CLAUDE.md from multiple layers in order: enterprise policy (admin-managed, always loaded), global personal (~/.claude/CLAUDE.md + rules/), project shared (.claude/CLAUDE.md + rules/), and local personal (.claude/CLAUDE.local.md). Later layers extend or override earlier ones.",
+    short:    "Multiple CLAUDE.md files merge: managed policy → global → project → local.",
+    desc:     "Claude Code merges CLAUDE.md from multiple layers in order: managed policy (admin-managed, always loaded), global personal (~/.claude/CLAUDE.md + rules/), project shared (.claude/CLAUDE.md + rules/), and local personal (.claude/CLAUDE.local.md). Later layers extend or override earlier ones.",
     doc:      "https://code.claude.com/docs/en/memory",
     docLabel: "CLAUDE.md inheritance docs",
     examples: [
@@ -121,7 +121,7 @@ export const nodeContent = {
         "filename": "CLAUDE.md layers",
         "label": "The full inheritance chain",
         "lang": "plaintext",
-        "code": "Load order (later = higher priority):\n\n1. Enterprise policy   ← company-wide guardrails (admin)\n\n2. Global personal     ~/.claude/CLAUDE.md\n                       + ~/.claude/rules/*.md\n   ← your preferences across ALL projects\n\n3. Project shared      .claude/CLAUDE.md\n                       + .claude/rules/*.md\n   ← team conventions, committed to git\n\n4. Local personal      .claude/CLAUDE.local.md\n   ← your private project overrides (gitignored)\n\nAll layers are merged into one system prompt."
+        "code": "Load order (later = higher priority):\n\n1. Managed policy      ← company-wide guardrails (admin)\n\n2. Global personal     ~/.claude/CLAUDE.md\n                       + ~/.claude/rules/*.md\n   ← your preferences across ALL projects\n\n3. Project shared      .claude/CLAUDE.md\n                       + .claude/rules/*.md\n   ← team conventions, committed to git\n\n4. Local personal      .claude/CLAUDE.local.md\n   ← your private project overrides (gitignored)\n\nAll layers are merged into one system prompt."
       }
     ],
   },
@@ -141,7 +141,7 @@ export const nodeContent = {
   },
   "command": {
     short:    "A custom /command you type explicitly to trigger a workflow.",
-    desc:     "Slash commands are user-invoked — you type /command-name to run them. Defined as Markdown files, Claude reads the file and follows its instructions when you invoke the command. Project commands live in .claude/commands/.",
+    desc:     "Slash commands are user-invoked — you type /command-name to run them. Defined as Markdown files, Claude reads the file and follows its instructions when you invoke the command. Project commands live in .claude/commands/. Note: slash commands have been merged into the skills system — .claude/commands/ still works but creating a skill is now the recommended approach.",
     doc:      "https://code.claude.com/docs/en/skills",
     docLabel: "Slash commands docs",
     examples: [
@@ -254,8 +254,8 @@ export const nodeContent = {
     ],
   },
   "hook-precompact": {
-    short:    "Fires before context compaction — inject summaries to survive /compact.",
-    desc:     "PreCompact fires when Claude is about to compact the context window (either via `/compact`\nor automatically when context is near its limit). Your hook receives the current conversation\non stdin and can write a summary to stdout — Claude will include that summary in the\ncompacted context, preserving state that would otherwise be lost.",
+    short:    "Fires before context compaction — run cleanup or logging before /compact.",
+    desc:     "PreCompact fires when Claude is about to compact the context window (either via `/compact`\nor automatically when context is near its limit). It has no decision control — it's a\nside-effects hook used for logging, cleanup, or external notifications before compaction\nruns. Your hook receives `trigger` (\"manual\" or \"auto\") and `custom_instructions` on stdin.",
     doc:      "https://code.claude.com/docs/en/hooks",
     docLabel: "Hooks guide",
     examples: [
@@ -269,7 +269,7 @@ export const nodeContent = {
         "filename": ".claude/hooks/summarize.sh",
         "label": "Summarize current task state before compaction",
         "lang": "bash",
-        "code": "#!/bin/bash\n# stdout is injected into the compacted context\necho \"## Pre-Compact Summary\"\necho \"Current task: $(cat .claude/current-task 2>/dev/null || echo 'unknown')\"\necho \"Files modified this session:\"\ngit diff --name-only 2>/dev/null | head -20"
+        "code": "#!/bin/bash\n# Log session state before compaction (side effects only)\necho \"## Pre-Compact Log\" >> .claude/compact-log.txt\necho \"Trigger: $(jq -r '.trigger' 2>/dev/null)\" >> .claude/compact-log.txt\necho \"Files modified this session:\" >> .claude/compact-log.txt\ngit diff --name-only 2>/dev/null | head -20 >> .claude/compact-log.txt"
       }
     ],
   },
@@ -294,8 +294,8 @@ export const nodeContent = {
     ],
   },
   "hook-stop": {
-    short:    "Fires when Claude finishes or sends a notification — great for cleanup.",
-    desc:     "The Stop hook fires when Claude finishes responding (a turn is complete — the agentic loop has run to completion or you interrupted it). The SessionEnd event is separate and fires when the session itself closes. Notification hooks fire when Claude wants to alert you during long tasks. Use Stop for cleanup scripts, desktop notifications, logging summaries, or triggering external workflows after each response.",
+    short:    "Fires when Claude finishes responding (turn complete) — great for cleanup.",
+    desc:     "The Stop hook fires when Claude finishes responding (a turn is complete — the agentic loop has run to completion). It does NOT fire when the user interrupts Claude. The SessionEnd event is separate and fires when the session itself closes. Use Stop for cleanup scripts, desktop notifications, logging summaries, or triggering external workflows after each response.",
     doc:      "https://code.claude.com/docs/en/hooks",
     docLabel: "Hooks guide",
     examples: [
@@ -399,7 +399,7 @@ export const nodeContent = {
   },
   "mcp-config": {
     short:    "Configure MCP servers in .mcp.json or via the claude mcp CLI.",
-    desc:     "MCP server configuration lives in .mcp.json at your repo root or in ~/.claude/mcp.json for global personal servers. Each entry specifies transport (stdio or HTTP/SSE), command/URL, arguments, and environment variables. Manage servers with the claude mcp add/list/remove CLI.",
+    desc:     "MCP server configuration lives in .mcp.json at your repo root (project-scoped) or in ~/.claude.json for user-scoped servers available across all projects. Each entry specifies transport (stdio or HTTP/SSE), command/URL, arguments, and environment variables. Manage servers with the claude mcp add/list/remove CLI.",
     doc:      "https://code.claude.com/docs/en/mcp",
     docLabel: "MCP configuration docs",
     examples: [
@@ -469,7 +469,7 @@ export const nodeContent = {
   },
   "output-style": {
     short:    "Customize how Claude formats and presents its responses.",
-    desc:     "Output styles modify Claude's system prompt to change tone, verbosity, and format. Built-ins include Default and Explanatory. You can write custom styles as Markdown files and activate them with /output-style.",
+    desc:     "Output styles modify Claude's system prompt to change tone, verbosity, and format. Built-ins include Default, Explanatory, and Learning. You can write custom styles as Markdown files and activate them with /output-style.",
     doc:      "https://code.claude.com/docs/en/output-styles",
     docLabel: "Output styles docs",
     examples: [
@@ -563,7 +563,7 @@ export const nodeContent = {
   },
   "plugin-yaml": {
     short:    "plugin.json in .claude-plugin/ — declares your plugin's metadata.",
-    desc:     "Every Claude Code plugin needs a plugin.json manifest in a .claude-plugin/ directory at the plugin root. It declares the plugin's name, version, description, author, license, and keywords. The manifest is used by marketplaces to list, search, and install plugins.",
+    desc:     "Every Claude Code plugin needs a plugin.json manifest in a .claude-plugin/ directory at the plugin root. Required fields are name, version, description, and author. Optional fields include license and keywords. The manifest is used by marketplaces to list, search, and install plugins.",
     doc:      "https://code.claude.com/docs/en/plugins",
     docLabel: "Plugin manifest docs",
     examples: [
@@ -576,8 +576,8 @@ export const nodeContent = {
     ],
   },
   "plugin": {
-    short:    "A shareable bundle of commands, agents, skills, hooks, and MCP servers.",
-    desc:     "Plugins extend Claude Code with custom functionality packaged as a directory. They can include slash commands, subagent definitions, Agent Skills, hooks, and MCP server configs — all shareable via a marketplace.",
+    short:    "A shareable bundle of commands, agents, skills, hooks, MCP servers, and LSP servers.",
+    desc:     "Plugins extend Claude Code with custom functionality packaged as a directory. They can include slash commands, subagent definitions, Agent Skills, hooks, MCP server configs, and LSP servers — all shareable via a marketplace.",
     doc:      "https://code.claude.com/docs/en/plugins",
     docLabel: "Plugins docs",
     examples: [

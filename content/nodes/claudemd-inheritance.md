@@ -1,10 +1,10 @@
 ---
-short: Multiple CLAUDE.md files merge: enterprise → global → project → local.
+short: Multiple CLAUDE.md files merge: managed policy → global → project → local.
 doc: https://code.claude.com/docs/en/memory
 docLabel: CLAUDE.md inheritance docs
 ---
 
-Claude Code merges CLAUDE.md from multiple layers in order: enterprise policy (admin-managed, always loaded), global personal (~/.claude/CLAUDE.md + rules/), project shared (.claude/CLAUDE.md + rules/), and local personal (.claude/CLAUDE.local.md). Later layers extend or override earlier ones.
+Claude Code merges CLAUDE.md from multiple layers in order: managed policy (admin-managed, always loaded), global personal (~/.claude/CLAUDE.md + rules/), project shared (.claude/CLAUDE.md + rules/), and local personal (.claude/CLAUDE.local.md). Later layers extend or override earlier ones.
 
 ### EXAMPLE: The full inheritance chain
 ### FILE: CLAUDE.md layers
@@ -13,7 +13,7 @@ Claude Code merges CLAUDE.md from multiple layers in order: enterprise policy (a
 ```plaintext
 Load order (later = higher priority):
 
-1. Enterprise policy   ← company-wide guardrails (admin)
+1. Managed policy      ← company-wide guardrails (admin)
 
 2. Global personal     ~/.claude/CLAUDE.md
                        + ~/.claude/rules/*.md

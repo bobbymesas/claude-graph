@@ -1,10 +1,10 @@
 ---
-short: A shareable bundle of commands, agents, skills, hooks, and MCP servers.
+short: A shareable bundle of commands, agents, skills, hooks, MCP servers, and LSP servers.
 doc: https://code.claude.com/docs/en/plugins
 docLabel: Plugins docs
 ---
 
-Plugins extend Claude Code with custom functionality packaged as a directory. They can include slash commands, subagent definitions, Agent Skills, hooks, and MCP server configs — all shareable via a marketplace.
+Plugins extend Claude Code with custom functionality packaged as a directory. They can include slash commands, subagent definitions, Agent Skills, hooks, MCP server configs, and LSP servers — all shareable via a marketplace.
 
 ### EXAMPLE: Standard plugin layout
 ### FILE: Plugin directory structure

@@ -1,10 +1,10 @@
 ---
-short: Fires when Claude finishes or sends a notification — great for cleanup.
+short: Fires when Claude finishes responding (turn complete) — great for cleanup.
 doc: https://code.claude.com/docs/en/hooks
 docLabel: Hooks guide
 ---
 
-The Stop hook fires when Claude finishes responding (a turn is complete — the agentic loop has run to completion or you interrupted it). The SessionEnd event is separate and fires when the session itself closes. Notification hooks fire when Claude wants to alert you during long tasks. Use Stop for cleanup scripts, desktop notifications, logging summaries, or triggering external workflows after each response.
+The Stop hook fires when Claude finishes responding (a turn is complete — the agentic loop has run to completion). It does NOT fire when the user interrupts Claude. The SessionEnd event is separate and fires when the session itself closes. Use Stop for cleanup scripts, desktop notifications, logging summaries, or triggering external workflows after each response.
 
 ### EXAMPLE: Stop hook — desktop notification on completion
 ### FILE: .claude/settings.json

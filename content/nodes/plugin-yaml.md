@@ -4,7 +4,7 @@ doc: https://code.claude.com/docs/en/plugins
 docLabel: Plugin manifest docs
 ---
 
-Every Claude Code plugin needs a plugin.json manifest in a .claude-plugin/ directory at the plugin root. It declares the plugin's name, version, description, author, license, and keywords. The manifest is used by marketplaces to list, search, and install plugins.
+Every Claude Code plugin needs a plugin.json manifest in a .claude-plugin/ directory at the plugin root. Required fields are name, version, description, and author. Optional fields include license and keywords. The manifest is used by marketplaces to list, search, and install plugins.
 
 ### EXAMPLE: Plugin manifest format
 ### FILE: .claude-plugin/plugin.json

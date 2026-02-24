@@ -4,7 +4,7 @@ doc: https://code.claude.com/docs/en/sub-agents
 docLabel: Subagents & agent mode docs
 ---
 
-Agent mode allows Claude to autonomously orchestrate multiple subagents for complex tasks. A lead agent breaks down work and spawns specialized child agents (code reviewer, QA, researcher) that run in parallel with isolated context windows, then aggregates their results.
+Agent mode allows Claude to autonomously orchestrate multiple subagents for complex tasks. A lead agent breaks down work and spawns specialized child agents (code reviewer, QA, researcher) that run in parallel with isolated context windows, then aggregates their results. For coordinating agents across separate sessions, see Agent Teams.
 
 ### EXAMPLE: Spawning parallel specialist agents
 ### FILE: Agent mode pattern

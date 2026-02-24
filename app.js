@@ -1145,12 +1145,14 @@ document.querySelectorAll('.tab-btn[data-tab]').forEach(btn => {
       hint.style.display = '';
       refPanel.classList.remove('active');
       nodeDrawer.classList.remove('drawer-hidden');
+      syncNavUI();
     } else {
       canvasWrap.style.display = 'none';
       legend.style.display = 'none';
       hint.style.display = 'none';
       refPanel.classList.add('active');
       nodeDrawer.classList.add('drawer-hidden');
+      navBackBtn.style.display = 'none';
       closePanel();
       tooltip.style.opacity = '0';
       // Highlight any unhighlighted code blocks on first view

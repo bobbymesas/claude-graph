@@ -19,6 +19,7 @@ nodes.forEach(n => {
 });
 
 let navPath = []; // stack of node ids drilled into, e.g. [] → ['claude-code'] → ['claude-code','customization']
+let crumbHitRegions = []; // hit regions for breadcrumb links [{x,y,w,h,targetLevel}]
 let showAllMode = false;
 let _suppressHashUpdate = false;
 
@@ -381,18 +382,36 @@ function drawNavUI() {
   const cw = getW();
 
   // Breadcrumb trail at top of canvas (screen space, after camera restore)
+  crumbHitRegions = [];
   if (navPath.length > 0) {
     const crumbs = ['Claude Code', ...navPath.map(id => {
       const n = nodes.find(n => n.id === id);
       return n ? n.label.replace(/\n/g, ' ') : id;
     })];
-    const crumb = crumbs.join(' › ');
     ctx.save();
     ctx.font = '500 13px "JetBrains Mono", monospace';
-    ctx.fillStyle = cssVar('--text');
-    ctx.textAlign = 'center';
+    ctx.textAlign = 'left';
     ctx.textBaseline = 'top';
-    ctx.fillText(crumb, cw / 2, 22);
+    const sep = ' › ';
+    const sepW = ctx.measureText(sep).width;
+    const crumbWidths = crumbs.map(c => ctx.measureText(c).width);
+    const totalW = crumbWidths.reduce((a, b) => a + b, 0) + sepW * (crumbs.length - 1);
+    let x = (cw - totalW) / 2;
+    const y = 20;
+    crumbs.forEach((label, i) => {
+      const isLast = i === crumbs.length - 1;
+      ctx.fillStyle = isLast ? cssVar('--text') : cssVar('--accent');
+      ctx.fillText(label, x, y);
+      if (!isLast) {
+        crumbHitRegions.push({ x, y: y - 6, w: crumbWidths[i], h: 24, targetLevel: i });
+      }
+      x += crumbWidths[i];
+      if (!isLast) {
+        ctx.fillStyle = cssVar('--dim');
+        ctx.fillText(sep, x, y);
+        x += sepW;
+      }
+    });
     ctx.restore();
   }
 }
@@ -502,9 +521,8 @@ function draw() {
     ctx.font = `${isSelected || isHovered ? 500 : 400} ${fs}px "JetBrains Mono", monospace`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillStyle = isSelected ? cssVar('--bg')
-                  : dim        ? cssVar('--muted')
-                  : cssVar('--text');
+    ctx.globalAlpha = (dim ? 0.65 : 1) * n.animScale;  // raise for text only
+    ctx.fillStyle = isSelected ? '#120f0a' : cssVar('--text');
     const lh = fs * 1.3;
     lines.forEach((line, i) => {
       ctx.fillText(line, n.x, n.y + (i - (lines.length - 1) / 2) * lh);
@@ -908,7 +926,8 @@ canvas.addEventListener('mousemove', e => {
     tooltip.style.left = tx + 'px';
     tooltip.style.top  = ty + 'px';
   } else {
-    canvas.style.cursor = 'default';
+    const overCrumb = crumbHitRegions.some(r => mx >= r.x && mx <= r.x + r.w && my >= r.y && my <= r.y + r.h);
+    canvas.style.cursor = overCrumb ? 'pointer' : 'default';
     tooltip.style.opacity = '0';
   }
 });
@@ -917,6 +936,15 @@ canvas.addEventListener('mousedown', e => {
   const rect = canvas.getBoundingClientRect();
   const mx = e.clientX - rect.left;
   const my = e.clientY - rect.top;
+  const hitCrumb = crumbHitRegions.find(
+    r => mx >= r.x && mx <= r.x + r.w && my >= r.y && my <= r.y + r.h
+  );
+  if (hitCrumb) {
+    if (panel.classList.contains('open')) closePanel();
+    let steps = navPath.length - hitCrumb.targetLevel;
+    while (steps-- > 0) goBack();
+    return;
+  }
   mouseDownNode = getNodeAt(mx, my);
   mouseDownTime = Date.now();
   if (mouseDownNode) {
@@ -953,7 +981,6 @@ canvas.addEventListener('mouseup', e => {
     dragging = null;
   }
 
-  // Short press = click
   if (elapsed < 250 && upNode && upNode === mouseDownNode) {
     tooltip.style.opacity = '0';
     goDeeper(upNode);

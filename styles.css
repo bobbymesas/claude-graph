@@ -75,7 +75,6 @@ html, body {
 
 /* ── THEME TOGGLE ─────────────────────────────────────────────── */
 .theme-toggle {
-  margin-left: auto;
   display: flex; gap: 2px;
   background: var(--surf2); border: 1px solid var(--border);
   border-radius: 6px; padding: 3px;
@@ -119,7 +118,7 @@ canvas { display: block; width: 100%; height: 100%; cursor: default; }
 /* ── SIDE PANEL ───────────────────────────────────────────────── */
 #panel {
   position: fixed; top: 48px; right: 0; bottom: 0;
-  width: 440px; min-width: 300px; max-width: 80vw;
+  width: 560px; min-width: 300px; max-width: 80vw;
   z-index: 20;
   background: var(--surf);
   border-left: 1px solid var(--border);
@@ -251,9 +250,17 @@ body.panel-resizing { cursor: ew-resize; user-select: none; }
   margin: 0 !important; border-radius: 0 !important; border: none !important;
   font-size: 11.5px !important; line-height: 1.65 !important;
   font-family: 'JetBrains Mono', 'Fira Code', monospace !important;
+  overflow-x: auto; white-space: pre;
 }
 .cb-body pre::-webkit-scrollbar { height: 4px; }
 .cb-body pre::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+.cb-note {
+  font-size: 11.5px; line-height: 1.65; color: var(--dim);
+  font-family: 'JetBrains Mono', monospace; font-weight: 300;
+  padding: 10px 16px 12px;
+  border-top: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surf2) 60%, transparent);
+}
 
 /* Related chips */
 .p-related-title {
@@ -274,10 +281,10 @@ body.panel-resizing { cursor: ew-resize; user-select: none; }
   display: none;
   position: fixed; bottom: 20px; left: 20px; z-index: 15;
   background: var(--surf2); border: 1px solid var(--border2);
-  border-radius: 6px; color: var(--dim); cursor: pointer;
+  border-radius: 8px; color: var(--dim); cursor: pointer;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 10px; font-weight: 500; letter-spacing: .06em;
-  padding: 7px 16px;
+  font-size: 13px; font-weight: 500; letter-spacing: .06em;
+  padding: 10px 22px;
   transition: color .15s, border-color .15s, background .15s;
 }
 #nav-back:hover {
@@ -539,6 +546,59 @@ body.panel-resizing { cursor: ew-resize; user-select: none; }
   font-size: 10px; color: var(--dim); line-height: 1.4; font-weight: 300;
 }
 
+/* ── BOTTOM DRAWER ───────────────────────────────────────────── */
+#node-drawer {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 14;
+  background: var(--surf);
+  border-top: 1px solid var(--border2);
+  box-shadow: 0 -8px 32px rgba(0,0,0,.3);
+}
+#node-drawer.drawer-hidden { display: none; }
+
+#node-drawer-toggle {
+  width: 100%; padding: 10px 20px;
+  background: transparent; border: none;
+  color: var(--dim);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; font-weight: 500; letter-spacing: .06em;
+  cursor: pointer; display: flex; align-items: center;
+  justify-content: center; gap: 8px;
+  transition: color .15s;
+}
+#node-drawer-toggle:hover { color: var(--accent); }
+
+#node-drawer-arrow {
+  display: inline-block;
+  transition: transform .3s cubic-bezier(.4,0,.2,1);
+}
+#node-drawer.open #node-drawer-arrow { transform: rotate(180deg); }
+
+#node-drawer-body {
+  max-height: 0; overflow: hidden;
+  transition: max-height .35s cubic-bezier(.4,0,.2,1);
+}
+#node-drawer.open #node-drawer-body {
+  max-height: 50vh;
+  overflow-y: auto;
+}
+#node-drawer-body #node-index-section {
+  padding: 4px 24px 20px;
+}
+
+/* ── MARKDOWN DESC STYLES ────────────────────────────────────── */
+.p-desc p { margin: 0 0 10px; }
+.p-desc p:last-child { margin-bottom: 0; }
+.p-desc ul.md-list { margin: 6px 0 10px 18px; padding: 0; list-style: disc; }
+.p-desc li { margin-bottom: 4px; line-height: 1.7; }
+.p-desc strong { color: var(--text); font-weight: 600; }
+.p-desc code.md-code {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  background: var(--surf2); border: 1px solid var(--border2);
+  border-radius: 3px; padding: 1px 5px; color: var(--accent);
+}
+
 /* ── KEYBOARD HINTS STRIP ────────────────────────────────────── */
 #kb-hints {
   display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
@@ -550,3 +610,24 @@ body.panel-resizing { cursor: ew-resize; user-select: none; }
 #kb-hints.visible { display: flex; align-items: center; }
 #kb-hints span { white-space: nowrap; }
 #kb-hints .kb-close { cursor: pointer; color: var(--muted); margin-left: 8px; }
+
+/* ── GITHUB LINK ─────────────────────────────────────────────── */
+.github-link {
+  display: flex; align-items: center;
+  color: var(--muted); margin-left: auto;
+  transition: color .15s;
+}
+.github-link:hover { color: var(--text); }
+.github-icon { width: 16px; height: 16px; }
+
+/* ── FOOTER ──────────────────────────────────────────────────── */
+#site-footer {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  display: flex; align-items: center; justify-content: center;
+  padding: 8px 20px;
+  background: linear-gradient(to top, var(--bg) 60%, transparent);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; color: var(--muted);
+  pointer-events: none;
+  z-index: 10;
+}

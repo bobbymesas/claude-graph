@@ -141,6 +141,7 @@ function resize() {
 
 function getW() { return canvas.width / devicePixelRatio; }
 function getH() { return canvas.height / devicePixelRatio; }
+function screenToWorld(sx, sy) { return { x: sx - panX, y: sy - panY }; }
 
 resize();
 
@@ -264,15 +265,15 @@ function tick() {
     if (!b.dragging) { b.vx -= dx * f; b.vy -= dy * f; }
   });
 
-  // Gravity to center + damping + bounds (active only)
+  // Gravity toward screen center (in world coords) + damping
+  const worldCenterX = cw / 2 - panX;
+  const worldCenterY = ch / 2 - panY;
   active.forEach(n => {
     if (n.dragging) return;
-    n.vx += (cw / 2 - n.x) * 0.0015;
-    n.vy += (ch / 2 - n.y) * 0.0015;
+    n.vx += (worldCenterX - n.x) * 0.0015;
+    n.vy += (worldCenterY - n.y) * 0.0015;
     n.vx *= 0.84; n.vy *= 0.84;
     n.x += n.vx; n.y += n.vy;
-    n.x = Math.max(n.r + 8, Math.min(cw - n.r - 8, n.x));
-    n.y = Math.max(n.r + 8, Math.min(ch - n.r - 8, n.y));
   });
 }
 
@@ -282,6 +283,17 @@ function tick() {
 
 let hoveredNode = null, selectedNode = null, keyFocusNode = null;
 let pulseT = 0;
+
+let panX = 0, panY = 0;
+let isPanning = false;
+let panStartX = 0, panStartY = 0;
+let panStartPanX = 0, panStartPanY = 0;
+let panMoved = false;
+
+let touchStartTime = 0;
+let touchStartX = 0, touchStartY = 0;
+let touchDragNode = null;
+let touchDragOffX = 0, touchDragOffY = 0;
 
 function isConnected(ref, node) {
   return edges.some(e =>
@@ -297,10 +309,12 @@ function drawBgGrid() {
   ctx.lineWidth = 1;
   const step = 32;
   const cw = getW(), ch = getH();
-  for (let x = step; x < cw; x += step) {
+  const ox = ((panX % step) + step) % step;
+  const oy = ((panY % step) + step) % step;
+  for (let x = ox - step; x < cw + step; x += step) {
     ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, ch); ctx.stroke();
   }
-  for (let y = step; y < ch; y += step) {
+  for (let y = oy - step; y < ch + step; y += step) {
     ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(cw, y); ctx.stroke();
   }
   ctx.restore();
@@ -347,10 +361,8 @@ function drawEdge(a, b, alpha, color, lineWidth, dashed) {
   ctx.restore();
 }
 
-function drawNavUI() {
-  const cw = getW(), ch = getH();
-
-  // "click to explore" hint at root level
+function drawNavHint() {
+  // "click to explore" hint — node-relative, called inside camera transform
   if (navPath.length === 0) {
     const cc = nodes.find(n => n.id === 'claude-code');
     if (cc) {
@@ -363,8 +375,12 @@ function drawNavUI() {
       ctx.restore();
     }
   }
+}
 
-  // Breadcrumb trail at top of canvas when drilled in
+function drawNavUI() {
+  const cw = getW();
+
+  // Breadcrumb trail at top of canvas (screen space, after camera restore)
   if (navPath.length > 0) {
     const crumbs = ['Claude Code', ...navPath.map(id => {
       const n = nodes.find(n => n.id === id);
@@ -372,11 +388,11 @@ function drawNavUI() {
     })];
     const crumb = crumbs.join(' › ');
     ctx.save();
-    ctx.font = '400 9px "JetBrains Mono", monospace';
-    ctx.fillStyle = cssVar('--muted');
+    ctx.font = '500 13px "JetBrains Mono", monospace';
+    ctx.fillStyle = cssVar('--text');
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
-    ctx.fillText(crumb, cw / 2, 14);
+    ctx.fillText(crumb, cw / 2, 22);
     ctx.restore();
   }
 }
@@ -387,6 +403,10 @@ function draw() {
   pulseT += 0.018;
 
   drawBgGrid();
+
+  // ── Camera transform: all world-space drawing goes inside ──
+  ctx.save();
+  ctx.translate(panX, panY);
 
   const activeRef = selectedNode || hoveredNode;
 
@@ -428,7 +448,7 @@ function draw() {
     ctx.translate(n.x, n.y);
     ctx.scale(n.animScale, n.animScale);
     ctx.translate(-n.x, -n.y);
-    ctx.globalAlpha = (dim ? 0.18 : 1) * n.animScale;
+    ctx.globalAlpha = (dim ? 0.35 : 1) * n.animScale;
 
     // Pulse ring on claude-code
     if (n.id === 'claude-code' && !dim) {
@@ -462,15 +482,15 @@ function draw() {
     ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
     ctx.fillStyle = isSelected ? color + 'ee'
                   : isHovered  ? color + 'cc'
-                  : connected && activeRef ? color + '40'
-                  : color + '28';
+                  : connected && activeRef ? color + '55'
+                  : color + '44';
     ctx.fill();
 
     // Circle stroke
     ctx.save();
     if (isSelected) { ctx.shadowBlur = 12; ctx.shadowColor = color; }
-    ctx.strokeStyle = color + (isSelected ? 'ff' : isHovered ? 'ee' : connected && activeRef ? 'cc' : 'aa');
-    ctx.lineWidth = isSelected ? 2.5 : isHovered ? 2 : 1.5;
+    ctx.strokeStyle = color + (isSelected ? 'ff' : isHovered ? 'ff' : connected && activeRef ? 'dd' : 'cc');
+    ctx.lineWidth = isSelected ? 2.5 : isHovered ? 2 : 1.8;
     ctx.beginPath();
     ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
     ctx.stroke();
@@ -506,7 +526,11 @@ function draw() {
     ctx.restore();
   }
 
-  drawNavUI();
+  drawNavHint(); // node-relative hint, inside camera transform
+
+  ctx.restore(); // end camera transform
+
+  drawNavUI(); // breadcrumb stays in screen space
 }
 
 function cssVar(name) {
@@ -557,7 +581,7 @@ function navigateToNode(id) {
     if (n) goDeeper(n);
   }
   const targetNode = nodes.find(n => n.id === id);
-  if (targetNode) openPanel(targetNode);
+  if (targetNode) { closeDrawer(); openPanel(targetNode); }
 
   _suppressHashUpdate = false;
   updateHash();
@@ -663,6 +687,32 @@ const pDoclink = document.getElementById('p-doclink');
 const pExamples= document.getElementById('p-examples');
 const pRelated = document.getElementById('p-related');
 
+const nodeDrawer       = document.getElementById('node-drawer');
+const nodeDrawerToggle = document.getElementById('node-drawer-toggle');
+nodeDrawerToggle.addEventListener('click', () => nodeDrawer.classList.toggle('open'));
+function closeDrawer() { nodeDrawer.classList.remove('open'); }
+
+function renderMarkdown(text) {
+  let html = text
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/`([^`]+)`/g, '<code class="md-code">$1</code>');
+  const lines = html.split('\n');
+  let out = '', inList = false;
+  for (const line of lines) {
+    const t = line.trim();
+    if (t.startsWith('- ')) {
+      if (!inList) { out += '<ul class="md-list">'; inList = true; }
+      out += `<li>${t.slice(2)}</li>`;
+    } else {
+      if (inList) { out += '</ul>'; inList = false; }
+      if (t) out += `<p>${t}</p>`;
+    }
+  }
+  if (inList) out += '</ul>';
+  return out;
+}
+
 function langFromFilename(filename) {
   if (/\.json$/.test(filename)) return 'json';
   if (/\.md$/.test(filename))   return 'markdown';
@@ -703,7 +753,7 @@ function openPanel(node) {
   pBadges.appendChild(b2);
 
   // Description
-  pDesc.textContent = node.desc;
+  pDesc.innerHTML = renderMarkdown(node.desc || '');
 
   // Doc link
   pDoclink.innerHTML = node.doc ? `
@@ -744,6 +794,13 @@ function openPanel(node) {
     if (lang !== 'plaintext') code.className = `language-${lang}`;
     pre.appendChild(code);
     body.appendChild(pre);
+
+    if (ex.note) {
+      const noteEl = document.createElement('p');
+      noteEl.className = 'cb-note';
+      noteEl.textContent = ex.note;
+      body.appendChild(noteEl);
+    }
 
     // Syntax highlight + copy button
     try { window.hljs.highlightElement(code); } catch (e) {}
@@ -805,8 +862,9 @@ const ttCat    = document.getElementById('tt-cat');
 let dragging = null, dragOffX = 0, dragOffY = 0;
 let mouseDownNode = null, mouseDownTime = 0;
 
-function getNodeAt(mx, my) {
-  return nodes.find(n => n.animScale > 0.5 && Math.hypot(n.x - mx, n.y - my) < n.r) || null;
+function getNodeAt(sx, sy) {
+  const { x, y } = screenToWorld(sx, sy);
+  return nodes.find(n => n.animScale > 0.5 && Math.hypot(n.x - x, n.y - y) < n.r) || null;
 }
 
 canvas.addEventListener('mousemove', e => {
@@ -816,8 +874,17 @@ canvas.addEventListener('mousemove', e => {
   const my = e.clientY - rect.top;
 
   if (dragging) {
-    dragging.x = mx + dragOffX;
-    dragging.y = my + dragOffY;
+    const w = screenToWorld(mx, my);
+    dragging.x = w.x + dragOffX;
+    dragging.y = w.y + dragOffY;
+    return;
+  }
+
+  if (isPanning) {
+    const dx = mx - panStartX, dy = my - panStartY;
+    if (Math.abs(dx) > 4 || Math.abs(dy) > 4) panMoved = true;
+    panX = panStartPanX + dx;
+    panY = panStartPanY + dy;
     return;
   }
 
@@ -853,10 +920,16 @@ canvas.addEventListener('mousedown', e => {
   mouseDownNode = getNodeAt(mx, my);
   mouseDownTime = Date.now();
   if (mouseDownNode) {
-    dragOffX = mouseDownNode.x - mx;
-    dragOffY = mouseDownNode.y - my;
+    const w = screenToWorld(mx, my);
+    dragOffX = mouseDownNode.x - w.x;
+    dragOffY = mouseDownNode.y - w.y;
     dragging = mouseDownNode;
     dragging.dragging = true;
+    canvas.style.cursor = 'grabbing';
+  } else {
+    isPanning = true; panMoved = false;
+    panStartX = mx; panStartY = my;
+    panStartPanX = panX; panStartPanY = panY;
     canvas.style.cursor = 'grabbing';
   }
 });
@@ -868,6 +941,12 @@ canvas.addEventListener('mouseup', e => {
   const my = e.clientY - rect.top;
   const upNode = getNodeAt(mx, my);
 
+  if (isPanning) {
+    isPanning = false;
+    canvas.style.cursor = hoveredNode ? 'pointer' : 'default';
+    if (panMoved) { mouseDownNode = null; return; }
+  }
+
   if (dragging) {
     dragging.dragging = false;
     dragging.vx = 0; dragging.vy = 0;
@@ -878,7 +957,7 @@ canvas.addEventListener('mouseup', e => {
   if (elapsed < 250 && upNode && upNode === mouseDownNode) {
     tooltip.style.opacity = '0';
     goDeeper(upNode);
-  } else if (elapsed < 250 && !upNode && selectedNode) {
+  } else if (elapsed < 250 && !upNode && selectedNode && !panMoved) {
     closePanel();
   }
 
@@ -889,8 +968,70 @@ canvas.addEventListener('mouseup', e => {
 canvas.addEventListener('mouseleave', () => {
   tooltip.style.opacity = '0';
   if (dragging) { dragging.dragging = false; dragging = null; }
+  if (isPanning) { isPanning = false; }
   hoveredNode = null;
 });
+
+canvas.addEventListener('touchstart', e => {
+  e.preventDefault();
+  const touch = e.touches[0];
+  const rect = canvas.getBoundingClientRect();
+  const tx = touch.clientX - rect.left;
+  const ty = touch.clientY - rect.top;
+  touchStartTime = Date.now();
+  touchStartX = tx; touchStartY = ty;
+  panMoved = false;
+  const node = getNodeAt(tx, ty);
+  if (node) {
+    const w = screenToWorld(tx, ty);
+    touchDragNode = node;
+    touchDragOffX = node.x - w.x;
+    touchDragOffY = node.y - w.y;
+    touchDragNode.dragging = true;
+  } else {
+    touchDragNode = null;
+    isPanning = true;
+    panStartX = tx; panStartY = ty;
+    panStartPanX = panX; panStartPanY = panY;
+  }
+}, { passive: false });
+
+canvas.addEventListener('touchmove', e => {
+  e.preventDefault();
+  const touch = e.touches[0];
+  const rect = canvas.getBoundingClientRect();
+  const tx = touch.clientX - rect.left;
+  const ty = touch.clientY - rect.top;
+  const dx = tx - touchStartX, dy = ty - touchStartY;
+  if (Math.abs(dx) > 4 || Math.abs(dy) > 4) panMoved = true;
+  if (touchDragNode) {
+    const w = screenToWorld(tx, ty);
+    touchDragNode.x = w.x + touchDragOffX;
+    touchDragNode.y = w.y + touchDragOffY;
+  } else if (isPanning) {
+    panX = panStartPanX + (tx - panStartX);
+    panY = panStartPanY + (ty - panStartY);
+  }
+}, { passive: false });
+
+canvas.addEventListener('touchend', e => {
+  e.preventDefault();
+  const elapsed = Date.now() - touchStartTime;
+  if (touchDragNode) {
+    touchDragNode.dragging = false;
+    touchDragNode.vx = 0; touchDragNode.vy = 0;
+  }
+  if (isPanning) isPanning = false;
+  // Short tap with no significant movement
+  if (elapsed < 250 && !panMoved) {
+    if (touchDragNode) {
+      goDeeper(touchDragNode);
+    } else if (selectedNode) {
+      closePanel();
+    }
+  }
+  touchDragNode = null;
+}, { passive: false });
 
 function moveKeyFocus(dx, dy) {
   const active = nodes.filter(n => n.animScale > 0.5);
@@ -1003,11 +1144,13 @@ document.querySelectorAll('.tab-btn[data-tab]').forEach(btn => {
       legend.style.display = '';
       hint.style.display = '';
       refPanel.classList.remove('active');
+      nodeDrawer.classList.remove('drawer-hidden');
     } else {
       canvasWrap.style.display = 'none';
       legend.style.display = 'none';
       hint.style.display = 'none';
       refPanel.classList.add('active');
+      nodeDrawer.classList.add('drawer-hidden');
       closePanel();
       tooltip.style.opacity = '0';
       // Highlight any unhighlighted code blocks on first view

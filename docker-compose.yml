@@ -1,0 +1,7 @@
+services:
+  web:
+    build: .
+    image: claude-graph
+    ports:
+      - "8080:80"
+    restart: unless-stopped

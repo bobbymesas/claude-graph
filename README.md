@@ -43,6 +43,23 @@ vercel --prod
 
 Vercel runs `node build.js` automatically on deploy.
 
+## Docker
+
+A multi-stage build compiles the content and serves the static site with nginx (no Node runtime in the final image).
+
+```bash
+docker build -t claude-graph .
+docker run -p 8080:80 claude-graph    # → http://localhost:8080
+```
+
+Or with Docker Compose:
+
+```bash
+docker compose up --build            # → http://localhost:8080
+```
+
+The container listens on port 80, which makes it straightforward to deploy to any container platform (e.g. GKE).
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md).

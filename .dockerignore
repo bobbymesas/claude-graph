@@ -1,0 +1,14 @@
+.git
+.gitignore
+.vercel
+archive
+docs
+node_modules
+Dockerfile
+.dockerignore
+CONTRIBUTING.md
+LICENSE
+README.md
+CLAUDE.md
+# Note: content/nodes/*.md is intentionally NOT ignored — build.js reads it
+# from the build context to generate data/nodes-compiled.js.
